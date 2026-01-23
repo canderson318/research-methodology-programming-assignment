@@ -1,0 +1,34 @@
+name: generic-python
+channels:
+  - defaults
+dependencies:
+  - pytest
+  - ipykernel
+  - numpy
+  - ipywidgets
+  - pandas
+  - statsmodels
+  - ipython
+  - pandoc
+  - pyarrow
+  - jupytext
+  - black
+  - jupyterlab
+  - pip
+  - nltk
+  - python=3.12
+  - scanpy
+  - tqdm
+  - h5py
+  - scikit-learn
+  - nodejs
+  - matplotlib
+  - pysam
+  - pyyaml
+  - scipy
+  - regex
+  - ruff
+  - anndata
+  - biopython
+  - seaborn
+# prefix: /Users/canderson/miniconda3/envs/generic-python
