@@ -1,16 +1,13 @@
-# research-methodology-programming-assignment
-
-
 ___Research Methods in Biomedical Informatics__
 __Programming Assignment__
 __Spring 2026___
-
+__ __ __
+## Key problem
 There are many applications wherein a researcher would like to know the sequence context around a given query sequence they suspect exists in their sample. For example, gene targeting may be used to create a knock-out model and the researcher would like to verify that the target vector was incorporated into the right place in the genome. Alternatively, a researcher might wish to fully identify suspected contaminating sequences that would indicate the presence and/or source of unclean sample handling procedures in the laboratory, such as a specific PCR primer contamination.
 Create a program that takes as input the set of all next-generation sequencing reads identified in a sample and an initial query sequence and returns the largest sequence contig that can be constructed from the reads that contains the initial query sequence.
 
-Example
-_Query sequence:_
-**ZZZZZZZZZ**
+#### Example
+_Query sequence:_ **ZZZZZZZZZ**
 
 |***Sequencer reads***|||
 |:---------:|:---------:|:---------:|
@@ -18,41 +15,41 @@ _Query sequence:_
 |**ZZZZZZZZZ**|XXXXXXXXX|ZZZZYYYYY|
 |BBBBZBBYB|BBBBXXZZY|DDDDDDDDD|
 
-*Output contig:*
-XXXXXXXXX**ZZZZZZZZZ**YYYYYVYYY
+*Output contig:* XXXXXXXXX**ZZZZZZZZZ**YYYYYVYYY
 
 
-**<u>Usage</u>**
-*Input:*
+#### Usage
+<u>Input:</u>
 - QUERY.fasta : fasta file containing initial query sequence (size: 1 KB)
 - READS.fasta.gz : gzipped fasta file of sequencer reads (size 5 MB, gunzip before use)
 Note: The files provided are data from a real sequencing run, with all inherent errors and artifacts.
-*Output:*
-- `ALLELES.fasta` : fasta file of the largest constructed contig (allele) containing the initial query
+
+<u>Output:</u>
 - `ALLELES.aln` : tab-delimited text file describing alignment of sequence reads to contig(s) in
+- `ALLELES.fasta` : fasta file of the largest constructed contig (allele) containing the initial query
 
-`ALLELES.tsv` the with the following columns (see example further below):
+- `ALLELES.tsv` the with the following columns (see example further below):
 
-`sseqid`
-+ name of sequencing read (from READS.fastq.gz)
+	- `sseqid`
+		+ name of sequencing read (from READS.fastq.gz)
 
-`qseqid`
+	- `qseqid`
 
-+ name of contig matched (from ALLELES.fasta)
+		+ name of contig matched (from ALLELES.fasta)
 
-`sstart`
+	- `sstart`
 
-+ starting coordinate in sequencing read `sseqid` that matches qseq
+		+ starting coordinate in sequencing read `sseqid` that matches qseq
 
-`send`
+	- `send`
 
-+ ending coordinate in sequencing read `sseqid` that matches qseq
+		+ ending coordinate in sequencing read `sseqid` that matches qseq
 
-`qstart`
-+ starting coordinate in contig that matches sseq
+	- `qstart`
+		+ starting coordinate in contig that matches sseq
 
-`qend`
-+ ending coordinate in contig that matches sseq
+	- `qend`
+		+ ending coordinate in contig that matches sseq
 
 Coordinates should respect that the contig in `ALLELES.fasta` is in the forward orientation, such that if the sequencing read sseq aligns in the forward direction with respect to the contig, send > `sstart`, whereas if sseq aligns in the reverse direction with respect to the contig, send < `sstart` (in italics below). It is not necessary to include identifiers for sequences from READS.fastq.gz that do not align to the sequence in `ALLELES.fasta`. Additional informative columns may be added to the text file, as you deem useful or appropriate.
 Example output.aln file:
@@ -63,7 +60,7 @@ Example output.aln file:
 |2S43D:07701:07310|contig1|20|112|240|332|
 |2S43D:07489:10315|contig1|123|90|20|53|
 |2S43D:04035:14719|contig1|105|41|10|74|
-
+_ _ __ _ _
 ## Deliverables
 ### Module 1
 - A short (max 10 minute) pre-recorded presentation that includes:
@@ -107,38 +104,31 @@ what went wrong in prior assessment and what steps were taken to correct those i
 
 1.​ Source code
 - GitHub repo
+
 To get an A you must master all four standards. For a B you must master 3, and a C requires 2.
-
+_ _ __ _ _
 ## Programming languages and libraries
-You are free to choose whatever programming language you like, but in general you may not use any
-bioinformatics toolkits or libraries. You are allowed to use libraries for calculation of common statistical tests
-and p-values (like t-test, Wilcoxon, Kolmogorov Smirnoff, etc), but you must fully cite the source. If there is any
-question about the eligibility of a specific statistical test, do not hesitate to mail ryan.layer@colorado.edu.
-Also, if you are programming in C++, the use of the Standard Template Libraries is allowed. If you are
-programming in python, you may use scipy and the numpy multidimensional array library. If there are
-questions, please send an email to ryan.layer@colorado.edu; reasonable accommodations will be made
-with the goal of standardizing available data structures across languages that students may choose.
-
+You are free to choose whatever programming language you like, but in general you may not use any bioinformatics toolkits or libraries. You are allowed to use libraries for calculation of common statistical tests and p-values (like t-test, Wilcoxon, Kolmogorov Smirnoff, etc), but you must fully cite the source. If there is any question about the eligibility of a specific statistical test, do not hesitate to mail ryan.layer@colorado.edu. Also, if you are programming in C++, the use of the Standard Template Libraries is allowed. If you are programming in python, you may use scipy and the numpy multidimensional array library. If there are questions, please send an email to ryan.layer@colorado.edu; reasonable accommodations will be made with the goal of standardizing available data structures across languages that students may choose.
+_ _ __ _ _
 ## GitHub repository
-Your GitHub repository will likely be visited more often than its associated publication, and the impact of your
-software will depend on how well your repository is organized. In addition to organizing your code in folders,
-making the README legible and useful is critical. GitHub markdown makes formatting easy, and at a minimum
-your README needs to have:
+Your GitHub repository will likely be visited more often than its associated publication, and the impact of your software will depend on how well your repository is organized. In addition to organizing your code in folders, making the `README` legible and useful is critical. GitHub markdown makes formatting easy, and at a minimum your `README` needs to have:
 - A short description of what your project does.
-- This is your elevator speech in text form. Keep it brief and mention relevant information which
-could include the relevant scientific field, statistical models, and input data. Think of the
-description as an abstract to the software, which can be more specific than the research
-abstract in some areas and more general in others.
-- How to use your project, with examples.
-- This section can include the usage that is produced by argparse, but needs to go into much
-more detail with specific examples. Go into detail about the format of input files, and give
-different combinations of input parameters and the resulting software behavior.
+
+- This is your elevator speech in text form. Keep it brief and mention relevant information which could include the relevant scientific field, statistical models, and input data. Think of the description as an abstract to the software, which can be more specific than the research abstract in some areas and more general in others.
+
+- How to use your project, with examples. 
+
+- This section can include the usage that is produced by argparse, but needs to go into much more detail with specific examples. Go into detail about the format of input files, and give different combinations of input parameters and the resulting software behavior.
+
 - How to install the software.
-- You can never take for granted user system configurations, so give a step-by-step guide that
-gives specific commands to install all dependencies and run all tests. Conda is useful here
-because it gives a common starting point.
--​
+
+- You can never take for granted user system configurations, so give a step-by-step guide thatgives specific commands to install all dependencies and run all tests. Conda is useful here because it gives a common starting point.
+
+<span style = 'fontsize:.2em'> 
 For more on this topic please visit https://dbader.org/blog/write-a-great-readme-for-your-github-project
+</span>
+
+_ _ __ _ _
 
 ## Pre-recorded presentations
 For these assignments, imagine that you are giving a talk at the American Society of Human Genetics meeting,
