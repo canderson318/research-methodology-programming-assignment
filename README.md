@@ -1,4 +1,4 @@
-___Research Methods in Biomedical Informatics__\
+__Research Methods in Biomedical Informatics__\
 __Programming Assignment__\
 __Spring 2026__\
 
