@@ -1,7 +1,10 @@
-a___Research Methods in Biomedical Informatics__\
+___Research Methods in Biomedical Informatics__\
 __Programming Assignment__\
-__Spring 2026___\
+__Spring 2026__\
+
 __ __ __
+
+
 ## Key problem
 There are many applications wherein a researcher would like to know the sequence context around a given query sequence they suspect exists in their sample. For example, gene targeting may be used to create a knock-out model and the researcher would like to verify that the target vector was incorporated into the right place in the genome. Alternatively, a researcher might wish to fully identify suspected contaminating sequences that would indicate the presence and/or source of unclean sample handling procedures in the laboratory, such as a specific PCR primer contamination.
 Create a program that takes as input the set of all next-generation sequencing reads identified in a sample and an initial query sequence and returns the largest sequence contig that can be constructed from the reads that contains the initial query sequence.
