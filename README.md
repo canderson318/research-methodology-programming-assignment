@@ -7,15 +7,15 @@ There are many applications wherein a researcher would like to know the sequence
 Create a program that takes as input the set of all next-generation sequencing reads identified in a sample and an initial query sequence and returns the largest sequence contig that can be constructed from the reads that contains the initial query sequence.
 
 #### Example
-_Query sequence:_ **ZZZZZZZZZ**
+_Query sequence:_ <span style = "color:red">ZZZZZZZZZ</span>
 
 |***Sequencer reads***|||
 |:---------:|:---------:|:---------:|
-|ZZZWZYZYY|YYYYYVYYY|XXXXZZZZZ|
-|**ZZZZZZZZZ**|XXXXXXXXX|ZZZZYYYYY|
+|ZZZWZYZYY|<span style = "color:blue">YYYYY</span>VYYY|XXXXZZZZZ|
+|<span style = "color:red">ZZZZZZZZZ</span>|<span style = "color:purple">XXXXXXXXX</span>|ZZZZY<span style = "color:blue">YYYYY</span>|
 |BBBBZBBYB|BBBBXXZZY|DDDDDDDDD|
 
-*Output contig:* XXXXXXXXX**ZZZZZZZZZ**YYYYYVYYY
+*Output contig:* <span style = "color:purple">XXXXXXXXX</span><span style = "color:red">ZZZZZZZZZ</span><span style = "color:blue">YYYYYVYYY</span>
 
 
 #### Usage
@@ -52,6 +52,7 @@ Note: The files provided are data from a real sequencing run, with all inherent 
 		+ ending coordinate in contig that matches sseq
 
 Coordinates should respect that the contig in `ALLELES.fasta` is in the forward orientation, such that if the sequencing read sseq aligns in the forward direction with respect to the contig, send > `sstart`, whereas if sseq aligns in the reverse direction with respect to the contig, send < `sstart` (in italics below). It is not necessary to include identifiers for sequences from READS.fastq.gz that do not align to the sequence in `ALLELES.fasta`. Additional informative columns may be added to the text file, as you deem useful or appropriate.
+
 Example output.aln file:
 
 |`sseqid`|`qseqid`|`sstart`|`send`|`qstart`|`qend`|
@@ -93,7 +94,7 @@ what went wrong in prior assessment and what steps were taken to correct those i
 - Module 3 presentation
 
 1.​ Written communication
-- GitHub README
+- GitHub `README`
 - Module 2 report
 - Final report
 
@@ -124,31 +125,19 @@ Your GitHub repository will likely be visited more often than its associated pub
 
 - You can never take for granted user system configurations, so give a step-by-step guide thatgives specific commands to install all dependencies and run all tests. Conda is useful here because it gives a common starting point.
 
-<span style = 'fontsize:.2em'> 
-For more on this topic please visit https://dbader.org/blog/write-a-great-readme-for-your-github-project
-</span>
+<small>
+<center>
+For more on this topic please visit <span style = 'color:skyblue'> https://dbader.org/blog/write-a-great-readme-for-your-github-project</span>
+</center>
+</small>
 
 _ _ __ _ _
 
 ## Pre-recorded presentations
-For these assignments, imagine that you are giving a talk at the American Society of Human Genetics meeting,
-or a similarly large conference with diverse attendees. Given the wide range of scientific backgrounds in your
-audience, the vast majority of which are not method developers. You must clearly and convincingly motivate
-the problem and your proposed solution without relying on jargon. Visual aids can effectively support your
-argument, but they can also be a distraction. Consider every line in your visuals and every word in your
-description and how they contribute to supporting your argument. If they can be removed without hurting the
-argument, then do so.
-The exception is in module one where I ask you to give a development and testing plan. Treat this as a distinct
-presentation where I am specifically asking for technical details.
+For these assignments, imagine that you are giving a talk at the American Society of Human Genetics meeting, or a similarly large conference with diverse attendees. Given the wide range of scientific backgrounds in your audience, the vast majority of which are not method developers. You must clearly and convincingly motivate the problem and your proposed solution without relying on jargon. Visual aids can effectively support your argument, but they can also be a distraction. Consider every line in your visuals and every word in your description and how they contribute to supporting your argument. If they can be removed without hurting the argument, then do so. The exception is in module one where I ask you to give a development and testing plan. Treat this as a distinct presentation where I am specifically asking for technical details.
 
 ## Written report
-​The written report should describe and justify your strategy, define the input files, present the algorithm
-overview, define any scoring methods, and detail the expected output files. The report should also contain an
-analysis of the final results and discussion. You should cite the appropriate scientific literature where
-appropriate.
+​The written report should describe and justify your strategy, define the input files, present the algorithm overview, define any scoring methods, and detail the expected output files. The report should also contain an analysis of the final results and discussion. You should cite the appropriate scientific literature where appropriate.
 
 ## Testing
-Testing is critical to robust and reproducible scientific research software. Integrating testing into your software
-design and development process (vs adding tests at the end) promotes abstraction and modularization. I
-expect your design plan to include testing plans for each component of your project and for the final code base
-to be thoroughly tested. In Python, unit tests are an easy and fast testing strategy.
+Testing is critical to robust and reproducible scientific research software. Integrating testing into your software design and development process (vs adding tests at the end) promotes abstraction and modularization. I expect your design plan to include testing plans for each component of your project and for the final code base to be thoroughly tested. In Python, unit tests are an easy and fast testing strategy.
