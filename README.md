@@ -1,6 +1,6 @@
 __Research Methods in Biomedical Informatics__\
 __Programming Assignment__\
-__Spring 2026__\
+__Spring 2026__
 
 __ __ __
 

@@ -15,7 +15,12 @@ F=src/001.py
 in_dir=in/
 
 echo -e "\n•••Running $F•••\n"
-python $F --in_dir $in_dir --cwd $dir || exit 1
+python $F --in_dir $in_dir \
+--cwd $dir \
+--out_dir out/001/ \
+--out_file query-with-reads.pkl \
+|| exit 1
+
 echo -e "\n•••$F Done•••\n"
 
 # # >>> XXXX

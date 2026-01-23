@@ -95,14 +95,19 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--cwd", required = True, type = str)
     parser.add_argument("--in_dir", required = True, type = str)
+    parser.add_argument("--out_dir", required = True, type = str)
+    parser.add_argument("--out_file", required = True, type = str)
 
     args = parser.parse_args()
+
+    cwd = Path(args.cwd)
+    in_dir= cwd / Path(args.in_dir)
+    out_dir = cwd / Path(args.out_dir)
 
     #\\\
     # Load Data
     #\\\
-    cwd = Path(args.cwd)
-    in_dir= cwd / Path(args.in_dir)
+    
     fastas = load_data(in_dir)
 
     QUERY = fastas['QUERY']
@@ -127,12 +132,10 @@ def main():
     }
 
     # make out directory
-    out_dir = cwd / Path('out/001')
     out_dir.mkdir(exist_ok = True)
-    out_file = 'query-with-reads.pkl'
 
     print("Pickling Data...")
-    with open(out_dir / out_file, 'wb') as f:
+    with open(out_dir / args.out_file, 'wb') as f:
         pkl.dump(out, f)
     print("Done")
 
