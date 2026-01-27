@@ -1,4 +1,3 @@
-#!/Users/canderson/miniconda3/envs/generic-python/bin/python
 
 import pandas as pd
 import numpy as np
@@ -9,15 +8,6 @@ import re
 import pickle as pkl
 import argparse
 
-# wd = '/Users/canderson/Documents/school/res-meth-class/programming-assignment/versions/version001'
-# cwd = os.getcwd()
-# os.chdir(cwd)
-
-#\\\
-#\\\
-# Read in fastas
-#\\\
-#\\\
 
 def load_data(in_dir):
     """
@@ -32,24 +22,22 @@ def load_data(in_dir):
     fasta_files= [f for f in files if Path(f).match('*.fasta')]
     fasta_names = [Path(f).stem for f in fasta_files]
 
+    if  "QUERY" not in fasta_names or  "READS" not in fasta_names:
+        Exception(" No QUERY or READS file in `in_dir`")
+
     print(f"Loading: {', '.join(fasta_files)}...")
 
     fastas = {}
     for nm, file in zip(fasta_names, fasta_files):
-        with open(f"in/{file}", 'r') as f:
-            fastas[nm] = f.readlines()
+        with open(f"{in_dir}/{file}", 'r') as f:
+            lines =   f.readlines()
+            fastas[nm] = [x for x in lines if  x.strip() and not x.lstrip().startswith("#")  ] # ignore commented
 
     print(f"Successfully Loaded: {', '.join(fastas.keys())}")
 
     return fastas
 
 
-
-#\\\
-#\\\
-# Parse sequences
-#\\\
-#\\\
 
 def parse(l:list) -> tuple:
     '''
@@ -103,6 +91,7 @@ def main():
     cwd = Path(args.cwd)
     in_dir= cwd / Path(args.in_dir)
     out_dir = cwd / Path(args.out_dir)
+    out_file =  Path(args.out_file)
 
     #\\\
     # Load Data
@@ -135,7 +124,7 @@ def main():
     out_dir.mkdir(exist_ok = True)
 
     print("Pickling Data...")
-    with open(out_dir / args.out_file, 'wb') as f:
+    with open(out_dir / out_file, 'wb') as f:
         pkl.dump(out, f)
     print("Done")
 

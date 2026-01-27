@@ -1,1 +1,3 @@
 *.pkl
+**pycache*
+*.csv
