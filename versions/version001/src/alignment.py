@@ -61,12 +61,3 @@ def alignment(s1,s2):
 # from alignment import *
 # alignment("AAATTT", "TTTCCGC")
 
-"""
-- banded matrix where only query in region similar to query. 
-- iterate until max hit when comparing s to s'
-
-- de brujin graph for k mers comparing each suffix to every other prefix
-- hamiltonian path to find contigs
-- count kmer occurance with hash
-- throw out infrequent kmers
-"""
