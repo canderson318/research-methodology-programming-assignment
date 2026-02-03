@@ -1,4 +1,3 @@
-
 import numpy as np
 def alignment(s1,s2):
     """
@@ -56,3 +55,18 @@ def alignment(s1,s2):
 
     return score, shift, direction
 
+# import os 
+# os.getcwd()
+# os.chdir("src")
+# from alignment import *
+# alignment("AAATTT", "TTTCCGC")
+
+"""
+- banded matrix where only query in region similar to query. 
+- iterate until max hit when comparing s to s'
+
+- de brujin graph for k mers comparing each suffix to every other prefix
+- hamiltonian path to find contigs
+- count kmer occurance with hash
+- throw out infrequent kmers
+"""
