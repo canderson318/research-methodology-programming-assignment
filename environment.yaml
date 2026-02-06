@@ -1,4 +1,4 @@
-name: generic-python
+name: res-meth
 channels:
   - conda-forge
   - defaults
@@ -40,6 +40,9 @@ dependencies:
   - scikit-learn
   - nodejs
   - matplotlib
+  - seaborn
+  - networkx
+  - pygraphviz
   - pysam
   - pyyaml
   - scipy

@@ -48,6 +48,6 @@ def sim_reads(seed:int, seq_len:int, count:int, len_range_lwr:int, len_range_upr
             f.write(f"{read}\n")
 
     with open(out_dir/'QUERY.fasta', 'w', encoding = 'UTF8') as f:
-        f.write(f">QUERY\nAATTCCTTCC\n")
+        f.write(f">QUERY\n{gen_sequence[10:30]}\n")
         f.write(f">0_generative_seq:1234\n{gen_sequence}\n")
 

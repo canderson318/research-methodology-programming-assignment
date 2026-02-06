@@ -1,0 +1,19 @@
+digraph {
+  rankdir=LR
+
+  Module1 [label="Process Reads", shape=box]
+  Module2 [label="Compare Kmers", shape=box]
+  Module3 [label="Create Contigs", shape=box]
+
+  Between1 [label="Test...", shape=diamond]
+  Between2 [label="Test...", shape=diamond]
+  End [label="Test...", shape=diamond]
+
+  Module1 -> Between1
+  Between1 -> Module2
+  Module2 -> Between2
+  Between2 -> Module3
+  Between2 -> End
+  Module3 -> End
+
+}

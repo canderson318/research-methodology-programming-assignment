@@ -58,24 +58,25 @@ def parse(l:list) -> tuple:
 
 def segment(s, t):
     """Return unique set of t length mers of s, and their frequency counts"""
-    return [s[i:i+t] for i in range(len(s)-t+1)]
+    return Counter(s[i:i+t] for i in range(len(s)-t+1))
 
 
 def segment_all(sequences:list, t):
     """Segment  all sequences and count tmers collectively"""
-    return Counter(s[i:i+t]  for s in sequences for i in range(len(s)-1+t))
+    return Counter(tmer  for s in sequences for tmer in segment(s,t))
 
 
-def summary(sequences):
+def summarize(arr: NDArray):
+    lngth = arr.shape[0]
+    mu = np.mean(arr)
+    sd = np.std(arr)
+    med = np.median(arr)
+    Q1 = np.quantile(arr, q = .25)
+    Q3 = np.quantile(arr, q = .75)
+    return {f"N":lngth, "mean":mu.round(3),"Q1":Q1.round(3),"Q3":Q3.round(3), "median": med.round(3), "sd": sd.round(3)}
+
+def seq_summary(sequences):
     """Print Reads lengths stats"""
-    def summarize(arr: NDArray):
-        lngth = arr.shape[0]
-        mu = np.mean(arr)
-        sd = np.std(arr)
-        med = np.median(arr)
-        Q1 = np.quantile(arr, q = .25)
-        Q2 = np.quantile(arr, q = .75)
-        return {f"N":lngth, "mean":mu.round(3),"Q1":Q1.round(3),"Q2":Q2.round(3), "median": med.round(3), "sd": sd.round(3)}
     seq_lens = np.array([int(len(s)) for s in sequences])
     return summarize(seq_lens)
 
@@ -87,7 +88,7 @@ def align(s1,s2):
     return ismatch
 
 
-def make_adj(counter):
+def make_adj(counter:Counter):
     """Make an adjacency matrix between each combination from list of strings. fil matrix with (str1==str2) * average(counts)"""
     lngth = len(counter)
     mat = pd.DataFrame(np.zeros(lngth**2).reshape((lngth, lngth)), 
@@ -106,28 +107,30 @@ def make_contigs(adj: pd.DataFrame):
     """Recursively search along adjacency matrix for contiguous strings"""
     indxs = adj.columns.to_numpy()
     adj_np = adj.to_numpy()
-    # start nodes are those with th fewest incoming edges
+
+    # start nodes are those with fewest incoming edges
     colsums = adj_np.sum(axis=0)
     starts = indxs[colsums == colsums.min()]
     contigs = []
-    def dfs(curr, contig, visited):
-        # values at current row
+
+    def _recurse(curr, contig, visited):
         row = adj_np[indxs == curr].ravel()
-        # where edge with curr
         nexts = indxs[row > 0]
-        # if end of string append contig and return nothing, exiting this function for that `start`
+        # if terminal string, end contig else continue growing contig
         if len(nexts) == 0:
             contigs.append(contig)
             return
-        # for each connection
+        # for each next add to contig if not see already, if seen already, return contig to contigs list
         for nxt in nexts:
-            # if this hasnt been visited already skip rest of loop and go to another branch
-            if visited[nxt] > 0:
+            if visited[nxt] > 0: # if seen (cycle) stop writing to this contig
                 contigs.append(contig)
                 continue
             new_visited = visited.copy()
             new_visited[nxt] += 1
-            dfs(nxt,contig + nxt[-1],new_visited)
+            _recurse(nxt,contig + nxt[-1],new_visited)
+
     for start in starts:
-        dfs(start,start,Counter([start]))
+        _recurse(start,start,Counter([start]))
+        
     return contigs
+
