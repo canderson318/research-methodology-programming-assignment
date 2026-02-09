@@ -1,0 +1,75 @@
+// Test: “Are the kmers valid?”
+// Concrete checks:
+// Every kmer has length exactly k
+// All kmers occur in at least one read
+// Frequency counts sum to total possible kmer positions
+// After thresholding, no kmer has frequency < τ
+// If this test fails, the downstream graph is meaningless.
+// Label suggestion:
+// Validate k-mer extraction & frequency constraints
+
+
+// Compare Kmers → Test 2
+// Purpose: Validate overlap logic and graph construction
+// Test: “Does the graph encode correct overlaps?”
+// Concrete checks:
+// Edge (u → v) exists iff suffix(u, k−1) == prefix(v, k−1)
+// No self-loops unless explicitly allowed
+// Graph is directed
+// Out-degree zero nodes correspond to terminal kmers
+// Optional but strong:
+// Adjacency matrix is binary
+// No false positives in overlap detection
+// This test ensures the graph is a correct De Bruijn representation.
+// Label suggestion:
+// Validate overlap correctness & graph structure
+
+
+// Compare Kmers → End (early exit)
+// Purpose: Detect unrecoverable cases early
+// Test: “Is assembly possible?”
+// Examples:
+// Graph has no edges
+// All nodes have in-degree ≥ 2 and out-degree ≥ 2 (high ambiguity)
+// Query kmer not present in node set
+// Failing here avoids meaningless contig enumeration.
+// Label suggestion:
+// Check assembly feasibility
+
+// Create Contigs → Final Test
+// Purpose: Validate path traversal and reconstruction
+// Test: “Are contigs valid paths?”
+// Concrete checks:
+// Each contig corresponds to a valid path in the graph
+// Adjacent kmers overlap by k−1
+// Contig length equals k + (#edges traversed)
+// No character loss or duplication
+// Cycles handled according to policy (terminated or bounded)
+// This confirms the algorithm actually reconstructs sequences correctly.
+// Label suggestion:
+// Validate contig path integrity
+
+
+digraph {
+  rankdir=LR
+
+  X1 [label=<<FONT POINT-SIZE="12">Process Reads</FONT>>, shape=box]
+  Btw1 [label=<<FONT POINT-SIZE="12"> Test that kmers and kmer frequencies align to simulated results </FONT>>, shape=box]
+  
+  X2 [label=<<FONT POINT-SIZE="12">Compare Kmers</FONT>>, shape=box]
+  Btw2 [label=<<FONT POINT-SIZE="12"> Test for TP, FP, TN, and FN matches between each kmer </FONT>>, shape=box]
+
+  X3 [label=<<FONT POINT-SIZE="12">Create Contigs</FONT>>, shape=box]
+  Btw3 [label=<<FONT POINT-SIZE="12"> Test if contigs are valid paths<BR/>Test if all paths in graph are traversed </FONT>>, shape=box]
+
+  {rank=same;X1,Btw1}
+  {rank=same;X2,Btw2}
+  {rank=same;X3,Btw3}
+
+  X1 -> Btw1
+  Btw1 -> X2
+  X2 -> Btw2
+  Btw2 -> X3
+  X3 -> Btw3
+}
+

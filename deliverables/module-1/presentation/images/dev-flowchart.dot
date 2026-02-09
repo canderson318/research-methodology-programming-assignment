@@ -1,0 +1,18 @@
+// - Process reads into kmers
+// - Compare each kmer to every other and measure overlap
+// - Create contiguous strings following branches of kmer overlaps
+// - Find the longest contigs containing the query sequence
+
+digraph {
+  rankdir=TB
+
+  X1 [label=<<B>Week 1:</B><BR/>Process reads into kmers>, shape=box]
+  X2 [label=<<B>Week 1.5:</B><BR/>Compare each kmer to every other and measure overlap>, shape=box]
+  X3 [label=<<B>Week 2:</B><BR/>Create contiguous strings following branches of kmer overlaps>, shape=box]
+  X4 [label=<<B>Week 3:</B><BR/>Find the longest contigs containing the query sequence>, shape=box]
+
+  X1 -> X2
+  X2 -> X3
+  X3 -> X4
+
+}

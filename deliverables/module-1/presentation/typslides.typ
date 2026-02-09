@@ -572,6 +572,7 @@
 // Returns: A formatted bibliography slide
 #let bibliography-slide(
   bib-call,
+  extra:none,
   title: "References",
   back-color: none,
 ) = context {
@@ -589,6 +590,11 @@
   ])
   
   bib-call
+
+  if extra != none {
+    v(1cm)
+    text()[#extra]
+  }
 }
 
 

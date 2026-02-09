@@ -1,10 +1,13 @@
 /*
 ROOT=/Users/canderson/Documents/school/res-meth-class/programming-assignment
 RELPATH=deliverables/module-1/presentation                              
+cd $ROOT/$RELPATH/images/ && ./process-images.sh || exit 1 
 cd $ROOT || exit 1
+typst compile --root $ROOT  $RELPATH/main.typ 
+
+
 typst watch --root $ROOT  $RELPATH/main.typ 
 
-typst compile --root $ROOT  $RELPATH/main.typ 
 
 
 open deliverables/module-1/presentation/main.pdf
@@ -58,6 +61,27 @@ open deliverables/module-1/presentation/main.pdf
 ]
 
 #slide( outlined: false)[
+  
+  #place(horizon+center)[#framed[
+    #set align(left)
+    Query sequence: #text(red)[ZZZZZZZZZ]
+    
+    Sequencer reads:\
+    #table(
+    columns: (auto, auto, auto),
+    inset: 10pt,
+    align: horizon,
+      [ZZZWZYZYY], [#text(blue)[YYYYY]VYYY],[#text(purple)[XXXX]#text(red)[ZZZZZ]],
+      [#text(red)[ZZZZZZZZ]],[#text(blue)[XXXXXXXXX]],[#text(red)[ZZZZ]#text(blue)[YYYYY]],
+      [BBBBZBBYB],[BBBBZBBYB],[DDDDDDDDD],
+    )
+
+    Output contig: #text(purple)[XXXXXXXXX]#text(red)[ZZZZZZZZZ]#text(blue)[YYYYY]VYYY
+  ]]
+
+]
+
+#slide( outlined: false)[
   #grid(columns:(2fr,1fr,2fr), gutter: 10pt,
     [#align(center)[#image("images/shredded-newspaper.jpg", height: 200pt, fit:"contain")]],
     [#text(3em,theme_col)[#align(center)[$arrow.r.filled$]]],
@@ -81,16 +105,19 @@ open deliverables/module-1/presentation/main.pdf
 #sl()
 
 #sl(overlay:[
+  #block(inset:(x:0cm,y:0cm), height:0cm,fill: white,radius:.2cm,[#set text(.8em,fill: blue);#emph[Remove non-alphanumeric characters]])
   #framed(back-color: white)[inaholeinthegroundtherelivedahobbitnotanastydirty...]
 ])
 
 #sl(overlay:[
+  #block(inset:(x:0cm,y:0cm), height:0cm,fill: white,radius:.2cm,[#set text(.8em,fill: blue);#emph[Remove non-alphanumeric characters]])
   #framed(back-color: white)[inaholeinthegroundtherelivedahobbitnotanastydirty...]
   #block(inset:(x:0cm,y:0cm), height:0cm,fill: white,radius:.2cm,[#set text(.8em,fill: blue);#emph[Simulate Reads by taking random substrings of different length]])
   #framed(back-color: white)[#align(left)[inahole\ intheground\ edahobbitno\ itnotanastydirty ...]]
   ])
 
 #sl(overlay:[
+  #block(inset:(x:0cm,y:0cm), height:0cm,fill: white,radius:.2cm,[#set text(.8em,fill: blue);#emph[Remove non-alphanumeric characters]])
   #framed(back-color: white)[inaholeinthegroundtherelivedahobbitnotanastydirty...]
   #block(inset:(x:0cm,y:0cm),height:0cm, fill: white,radius:.2cm,[#set text(.8em,fill: blue);#emph[Simulate Reads by taking random substrings of different length]])
   #framed(back-color: white)[#align(left)[inahole\ intheground\ edahobbitno\ itnotanastydirty ...]]
@@ -98,13 +125,14 @@ open deliverables/module-1/presentation/main.pdf
   #framed(back-color: white)[#align(left)[$k = 5$\ inaho, nahol, nahole, aholei, holein, ... itnot, tnota, notan, otana ...]]
   ])
 
-  #sl(overlay:[
+#sl(overlay:[
+  #block(inset:(x:0cm,y:0cm), height:0cm,fill: white,radius:.2cm,[#set text(.8em,fill: blue);#emph[Remove non-alphanumeric characters]])
   #framed(back-color: white)[inaholeinthegroundtherelivedahobbitnotanastydirty...]
   #block(inset:(x:0cm,y:0cm),height:0cm, fill: white,radius:.2cm,[#set text(.8em,fill: blue);#emph[Simulate Reads by taking random substrings of different length]])
   #framed(back-color: white)[#align(left)[inahole\ intheground\ edahobbitno\ itnotanastydirty ...]]
   #block(inset:(x:0cm,y:0cm), height:0cm,fill: white,radius:.2cm,[#set text(.8em,fill: blue);#emph[Chop into $k$ length 'mers]])
   #framed(back-color: white)[#align(left)[$k = 5$\ inaho, nahol, nahole, aholei, holein, ... itnot, tnota, notan, otana ...]]
-  #place(bottom+right,dx:1.8cm, dy:-2cm)[#block(inset:(x:1cm,y:1cm), fill: none,radius:.2cm,[#set text(1.5em,fill: red);#strong[How do we work backwards?] ])]
+  #place(bottom+right,dx:2cm, dy:-2cm)[#block(inset:(x:1cm,y:1cm), fill: none,radius:.2cm,[#set text(1.5em,fill: red);#strong[How do we work backwards?] ])]
   ])
 
   
@@ -112,7 +140,7 @@ open deliverables/module-1/presentation/main.pdf
 
 #slide(title:"What is a graph?", outlined:true)[
  #text(.9em)[#align(top)[A graph is a structure used to encode connections between things.]]
- #text(size:.5em)[ #figure(image("images/simple-graph.png", width: auto, height: 60%, fit:"contain"), caption: [A simple graph used to represent how countries share borders@simple_graph.]) ]
+ #text(size:.5em)[ #figure(image("images/simple-graph.png", width: auto, height: 60%, fit:"contain"), caption: [A simple graph used to represent how countries share borders.]) ] //@simple_graph
  #text(.9em)[#align(bottom)[I can use a graph to connect kmers that are similar to each other and reconstruct the original string by following each connection.]]
 ]
 
@@ -131,14 +159,11 @@ open deliverables/module-1/presentation/main.pdf
 
 
 
-#title-slide[Technical Approach]
+// #title-slide[Technical Approach]
+#title-slide[Development Plan]
 
-#slide(title:"Technical Approach")[
-  #set text(size:1.3em, weight: "bold")
-  - Process reads into kmers
-  - Compare each kmer to every other and measure overlap
-  - Create contiguous strings following branches of kmer overlaps
-  - Find the longest contigs containing the query sequence
+#slide()[
+  #align(center)[#image("images/dev-flowchart.svg")]
 ]
 
 
@@ -159,6 +184,7 @@ open deliverables/module-1/presentation/main.pdf
 
 
 #slide(title:"Compare Kmers", outlined:true)[
+  
   #set text(size:.8em)
   - Test how each kmer aligns with every other.
   - Return an adjacency matrix where a value of _1_ means the kmer at the row index matches the string of the column index.
@@ -193,13 +219,17 @@ open deliverables/module-1/presentation/main.pdf
   #grid(columns:(1.3fr , 1fr),rows:(300pt), gutter:.2em, 
     [
       #set align(left); #set text(size:.5em)
-      #pad(right:5em)[
-        #figure(image("images/single-path-stones.jpg", height: 200pt), caption:[Stones in a river arranged in a line.])//@river_footpath
-      ]
+        // #figure(
+        #image("images/stones.jpg", height: 200pt)
+        // , caption:[Stones scattered in a river.])//@river_stones
     ],
     [
       #set align(right); #set text(size:.5em)
-      #figure(image("images/stones.jpg", height: 200pt), caption:[Stones scattered in a river.])//@river_stones
+      // #figure(
+      #pad(right:5em)[
+        #image("images/single-path-stones.jpg", height: 200pt)
+      // , caption:[Stones in a river arranged in a line.])//@river_footpath
+      ]
     ])
 ]
 
@@ -282,18 +312,12 @@ open deliverables/module-1/presentation/main.pdf
 
 ]]
 
-#slide(title:"Development and Testing", outlined:true)[
-  #image("images/flowchart.svg")
-]
-#slide(title:"Assignment")[
- #strong[
-    - a clear and concise problem statement and algorithm design description that is targeted at a general scientific audience. Figures such as flow charts and schematics are encouraged.
-    - Technical jargon is discouraged.
-    - a detailed development and testing plan that is targeted at a fellow methods developer. This plan should explain how you will decompose your solution into independent modules, how those modules will interact, how they will be tested, and a timeline. 
-  ]
-]
+// #title-slide[Testing]
 
-
+#slide(title:"Testing", outlined:true)[
+  #set align(horizon+center)
+  #image("images/test-flowchart.svg", width: 110%)
+]
 
 
 
@@ -301,4 +325,6 @@ open deliverables/module-1/presentation/main.pdf
 // // // // // // // 
 // // // // // // // 
 #let bib = bibliography("bibliography.bib")
-#bibliography-slide(bib)
+#bibliography-slide(bib, extra: align(bottom)[ https://github.com/canderson318/research-methodology-programming-assignment ])
+
+
