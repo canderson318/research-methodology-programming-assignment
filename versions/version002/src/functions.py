@@ -84,8 +84,7 @@ def seq_summary(sequences):
 def align(s1,s2):
     """see if two same length strings match perfectly"""
     k = len(s1)
-    ismatch = s1[1:k] == s2[0:(k-1)]
-    return ismatch
+    return s1[1:k] == s2[0:(k-1)]
 
 
 def make_adj(counter:Counter):
