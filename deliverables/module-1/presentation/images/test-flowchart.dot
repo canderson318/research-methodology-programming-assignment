@@ -54,7 +54,7 @@ digraph {
   rankdir=LR
 
   X1 [label=<<FONT POINT-SIZE="12">Process Reads</FONT>>, shape=box]
-  Btw1 [label=<<FONT POINT-SIZE="12"> Test that kmers and kmer frequencies align to simulated results </FONT>>, shape=box]
+  Btw1 [label=<<FONT POINT-SIZE="12"> Test that kmers and kmer frequencies are correct </FONT>>, shape=box]
   
   X2 [label=<<FONT POINT-SIZE="12">Compare Kmers</FONT>>, shape=box]
   Btw2 [label=<<FONT POINT-SIZE="12"> Test for TP, FP, TN, and FN matches between each kmer </FONT>>, shape=box]

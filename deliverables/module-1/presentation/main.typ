@@ -9,8 +9,8 @@ typst compile --root $ROOT  $RELPATH/main.typ
 typst watch --root $ROOT  $RELPATH/main.typ 
 
 
-
 open deliverables/module-1/presentation/main.pdf
+
 
 */
 
@@ -47,8 +47,8 @@ open deliverables/module-1/presentation/main.pdf
   title: "Sequence Assembly Plan",
   subtitle: "Research Methods in Biomedical Informatics",
   authors: "Christian Anderson",
-  // info: today.display( "[day] [month repr:long] [year]"),
-  info: datetime(year:2026,month:2, day:17).display( "[day] [month repr:long] [year]")
+  info: today.display( "[day] [month repr:long] [year]"),
+  // info: datetime(year:2026,month:2, day:11).display( "[day] [month repr:long] [year]")
 )
 
 // Custom outline
@@ -121,7 +121,7 @@ open deliverables/module-1/presentation/main.pdf
   #framed(back-color: white)[inaholeinthegroundtherelivedahobbitnotanastydirty...]
   #block(inset:(x:0cm,y:0cm),height:0cm, fill: white,radius:.2cm,[#set text(.8em,fill: blue);#emph[Simulate Reads by taking random substrings of different length]])
   #framed(back-color: white)[#align(left)[inahole\ intheground\ edahobbitno\ itnotanastydirty ...]]
-  #block(inset:(x:0cm,y:0cm), height:0cm,fill: white,radius:.2cm,[#set text(.8em,fill: blue);#emph[Chop into $k$ length 'mers]])
+  #block(inset:(x:0cm,y:0cm), height:0cm,fill: white,radius:.2cm,[#set text(.8em,fill: blue);#emph[Chop into $k$ length 'mers using a sliding window]])
   #framed(back-color: white)[#align(left)[$k = 5$\ inaho, nahol, nahole, aholei, holein, ... itnot, tnota, notan, otana ...]]
   ])
 
@@ -130,7 +130,7 @@ open deliverables/module-1/presentation/main.pdf
   #framed(back-color: white)[inaholeinthegroundtherelivedahobbitnotanastydirty...]
   #block(inset:(x:0cm,y:0cm),height:0cm, fill: white,radius:.2cm,[#set text(.8em,fill: blue);#emph[Simulate Reads by taking random substrings of different length]])
   #framed(back-color: white)[#align(left)[inahole\ intheground\ edahobbitno\ itnotanastydirty ...]]
-  #block(inset:(x:0cm,y:0cm), height:0cm,fill: white,radius:.2cm,[#set text(.8em,fill: blue);#emph[Chop into $k$ length 'mers]])
+  #block(inset:(x:0cm,y:0cm), height:0cm,fill: white,radius:.2cm,[#set text(.8em,fill: blue);#emph[Chop into $k$ length 'mers using a sliding window]])
   #framed(back-color: white)[#align(left)[$k = 5$\ inaho, nahol, nahole, aholei, holein, ... itnot, tnota, notan, otana ...]]
   #place(bottom+right,dx:2cm, dy:-2cm)[#block(inset:(x:1cm,y:1cm), fill: none,radius:.2cm,[#set text(1.5em,fill: red);#strong[How do we work backwards?] ])]
   ])
@@ -162,7 +162,7 @@ open deliverables/module-1/presentation/main.pdf
 // #title-slide[Technical Approach]
 #title-slide[Development Plan]
 
-#slide()[
+#slide(title:"Timeline")[
   #align(center)[#image("images/dev-flowchart.svg")]
 ]
 

@@ -8,6 +8,9 @@ from pathlib import Path
 from pprint import pprint
 import pygraphviz
 
+
+raise NameError("need to fix how i ignore already seen reads. currently i return the contig if my next has been visited for simple cycle and branch that means i only explore the one path and not the branch as well\nadd repeat resolution where read locations are found based on alignment with main contigs")
+
 os.chdir("/Users/canderson/Documents/school/res-meth-class/programming-assignment/versions/version002")
 
 in_dir = Path("in/simulated1")
