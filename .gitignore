@@ -1,3 +1,4 @@
 *.pkl
 **pycache*
 *.csv
+*contigs.txt

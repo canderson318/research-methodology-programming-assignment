@@ -6,23 +6,23 @@ from typing import Sequence, Tuple
 
 def sim_reads(seed:int, seq_len:int, count:int, len_range_lwr:int, len_range_upr:int, out_dir:str):
     """Simulate Reads of specific length and count"""
-    def generate(leng: int, lib:Sequence[str], rng: Generator) -> str:
+    def _generate(leng: int, lib:Sequence[str], rng: Generator) -> str:
         """Make random sequenc of basepairs"""
         seq = rng.choice(a = lib,   size=leng, replace = True)
         return "".join(seq)
 
-    def chop(seq: str, length_range: Tuple[int,int], rng: Generator):
-        """Chop up sequence into kmers with lengths in length_range """
+    def _chop(seq: str, length_range: Tuple[int,int], rng: Generator):
+        """_chop up sequence into kmers with lengths in length_range """
         length = rng.integers(*length_range) # single int
         start = rng.integers(0, len(seq)-length + 1 ) # single int
         return seq[start:start+length]
 
-    def make_reads(seq_len: int,count: int,len_range: Tuple[int, int],rng: Generator):
+    def _make_reads(seq_len: int,count: int,len_range: Tuple[int, int],rng: Generator):
         """Yield reads and generator sequence"""
-        seq = generate(seq_len, ["A", "T", "C", "G"], rng)
+        seq = _generate(seq_len, ["A", "T", "C", "G"], rng)
         def _reads():
             for _ in range(count):
-                yield chop(seq, len_range, rng)
+                yield _chop(seq, len_range, rng)
 
         return _reads(), seq
 
@@ -32,7 +32,7 @@ def sim_reads(seed:int, seq_len:int, count:int, len_range_lwr:int, len_range_upr
     # \\\
     rng = np.random.default_rng(seed)
     rng = np.random.default_rng(seed)
-    reads, gen_sequence = make_reads(seq_len = seq_len, count = count, len_range = (len_range_lwr,len_range_upr), rng = rng)
+    reads, gen_sequence = _make_reads(seq_len = seq_len, count = count, len_range = (len_range_lwr,len_range_upr), rng = rng)
     
     # \\\
     # Save reads
