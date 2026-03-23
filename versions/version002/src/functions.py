@@ -1,13 +1,3 @@
-"""
-Notes
-- banded matrix where only query in region similar to query. 
-- iterate until max hit when comparing s to s'
-
-- de brujin graph for k mers comparing each suffix to every other prefix
-- hamiltonian path to find contigs
-- count kmer occurance with hash
-- throw out infrequent kmers
-"""
 
 from ast import Dict, Tuple
 import numpy as np
@@ -19,6 +9,7 @@ import re
 from numpy.typing import NDArray
 from collections import Counter
 from typing import Dict, List, Tuple
+import networkx as nx
 
 def load_data(in_dir):
     """
@@ -41,7 +32,7 @@ def load_data(in_dir):
             lines =   f.readlines()
             fastas[nm] = [x for x in lines if  x.strip() and not x.lstrip().startswith("#")  ] # ignore commented
 
-    print(f"Successfully Loaded: {in_dir}/[{', '.join(fasta_files)}]")
+    print(f"\tSuccessfully Loaded: {in_dir}/[{', '.join(fasta_files)}]")
 
     return fastas
 
@@ -117,7 +108,7 @@ def make_adj(counter:Counter):
     return pd.DataFrame(mat, index=keys, columns=keys)
 
 
-# def make_contigs(adj: pd.DataFrame):
+# def make_contigs_from_adj(adj: pd.DataFrame):
 #     """Recursively search along adjacency matrix for contiguous strings"""
 #     def _recurse(curr, contig, visited):
 
@@ -158,7 +149,7 @@ def make_adj(counter:Counter):
         
 #     return contigs
 
-# def make_contigs(query:str, adj: pd.DataFrame):
+# def make_contigs_from_adj(query:str, adj: pd.DataFrame):
 #     """Recursively search along adjacency matrix for indices of contiguous strings"""
 #     def _save_if_match(contig):
 #         """add contig to contigs list if query string in current expanded branch"""
@@ -207,7 +198,7 @@ def make_adj(counter:Counter):
 #     return contigs
 
 
-def make_contigs(query: str, adj: pd.DataFrame):
+def make_contigs_from_adj(query: str, adj: pd.DataFrame):
     """Iteratively search along adjacency matrix for indices of contiguous strings"""
     str_index = adj.columns.values
     indxs = np.arange(adj.shape[0], dtype=np.int16)
@@ -246,6 +237,33 @@ def make_contigs(query: str, adj: pd.DataFrame):
     
     return contigs
 
+# def make_contigs_from_1D_array(query:str, kmers: NDArray, save_only_match = True):
+#     inds = np.arange(len(kmers), dtype=np.int32)
+#     contigs = set()  
+#     def _save(contig, on_match):
+#         string = "".join(kmers[np.array(list(contig))])
+#         if (query in string and on_match) or not on_match:
+#             contigs.add(contig)  
+#     for start in inds:
+#         state = [(start, (start,))]
+#         while state:
+#             curr, contig = state.pop()
+#             visited = set(contig)
+#             nxts = set(inds) - visited
+#             grew = False
+#             for nxt in nxts:
+#                 if align(kmers[curr], kmers[nxt]):
+#                     grew = True
+#                     state.append((nxt, contig + (nxt,)))
+#             if not grew:
+#                 _save(contig, save_only_match)
+
+#     return list(contigs)
+# kmers = np.array(list(counter.keys()))
+# C = make_contigs_from_1D_array(query, kmers, save_only_match = False)
+# with open("/Users/canderson/Desktop/test.txt", 'wt') as f:
+#     for inds in C:
+#         f.write(f"{"".join(kmers[np.array(inds)])}\n")
 
 def print_contig_with_context(contig, query, context):
     '''print string hilighting match with query'''

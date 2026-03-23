@@ -3,6 +3,7 @@
 import sys
 from pathlib import Path
 import time
+from pprint import pprint
 # Add src directory to path
 sys.path.insert(0, str(Path(__file__).parent))
 import argparse
@@ -81,16 +82,23 @@ def main():
     query = query[0] # str query
     headers, sequences = parse(READS) # two lists
 
+    print("***Reads Summary***")
+    pprint(seq_summary(sequences))
+
     # count kmers
     print("\tsegmenting reads and counting kmers...")
     counter, kmer_mapping = segment_all(sequences, k)
     print(f"\t\t{counter.__len__():,} unique {k}-mers from {len(sequences):,} total reads")
     
     # filter for frequent reads
-    print(f"\tfiltering for kmer count > {thresh}...")
+    print(f"\tfiltering for kmer frequency > {thresh}...")
     counter = Counter({k: v for k, v in counter.items() if v > thresh})
     kmer_mapping = {kmer:value for kmer,value in kmer_mapping.items() if kmer in counter}
     print(f"\t\t{counter.__len__():,} unique {k}-mers after filtering")
+    
+    if counter.__len__() == 0:
+        raise ValueError(f"\n\tNo unique {k}-mers with frequency > {thresh}")
+    
 
     # make adjacency matrix between each kmer
     print("\tmaking adjacency matrix...")
@@ -99,17 +107,19 @@ def main():
     t1 = time.time()
     dt =(t1 - t0)
     print(f"\t\t{dt:.0f} s")
+    
     if save_adj:
         print("\tSaving adjacency...")
         adj.to_csv(out_dir/ "adjacency.csv", index=True)
 
     # Find Contigs
     print("Finding contigs...")
+    print("\tFor > 2000 kmers, this can take a while") if counter.__len__() > 2000 else print("\tThis should not take too long.")
     t0 = time.time()
-    contigs = make_contigs(query, adj)
+    contigs = make_contigs_from_adj(query, adj)
     t1 = time.time()
     dt =(t1 - t0)
-    print(f"{dt:.3f} seconds, {len(contigs)} contigs found")
+    print(f"\t{dt:.3f} s\n\t{len(contigs)} contigs found")
     print("Saving...")
 
     with open(out_dir/ "contigs.txt", 'w') as f:

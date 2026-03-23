@@ -20,8 +20,8 @@ in_dir.mkdir(exist_ok=True)
 #\\\\
 #\\\\
 
-k = 6
-thresh = t = 10
+k = 140
+t = 3
 sp.run([
     './src/main.py',
     '--out_dir', out_dir,
@@ -29,7 +29,7 @@ sp.run([
     '-k', str(k),
     '--save_adjacency',
     '-t', str(t)
-])
+], check = True)
 
 
 #\\\\

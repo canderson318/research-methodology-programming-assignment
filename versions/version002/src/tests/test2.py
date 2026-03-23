@@ -22,14 +22,14 @@ in_dir.mkdir(exist_ok=True)
 #\\\\
 #\\\\
  
-query = 'dirtywetholefilledwiththeendsofwormsandanoozysmell'
+query = 'wormsandanoozysmell'
 txt = "inaholeinthegroundtherelivedahobbitnotanastydirtywetholefilledwiththeendsofwormsandanoozysmellnoryetadrybaresandyholewithnothinginittositdownonortoeatitwasahobbitholeandthatmeanscomfort"
 
 
 # write random segments to fasta
 np.random.seed(210320) 
 with open(in_dir/"READS.fasta", 'wt', encoding = "UTF+8") as f:
-    for i in range(1000):
+    for i in range(3000):
         lngth = np.random.choice(np.arange(5,10))
         strt = np.random.choice(range(len(txt)- lngth))
         end = strt+lngth
