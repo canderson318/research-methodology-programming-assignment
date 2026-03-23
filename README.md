@@ -15,7 +15,6 @@ There are many applications wherein a researcher would like to know the sequence
 ### Key Problem
 Take as input the set of all next-generation sequencing reads identified in a sample and an initial query sequence, and return the largest sequence contig that can be constructed from the reads that contains the initial query sequence.
 
-
 ----
 
 ## Set up 
@@ -26,21 +25,37 @@ conda env create -f environment.yaml
 
 ## Execution
 
-Example execution for next-gen reads `reads.fasta` and a query sequence `query.fasta` both in fasta format. 
+Below is an example execution for next-gen reads `reads.fasta` and a query sequence `query.fasta` both in fasta format. 
+**Example directory tree:**
 ```raw
 working_directory/
-  - in/
-    - reads.fasta
-    - query.fasta
-  - out/
+	- src/
+		- main.py
+		- functions.py
+	- in/
+		- reads.fasta
+		- query.fasta
+	- out/
 ```
-
+**Example usage:**
 ```bash
 cd working_directory
-./main.py --reads in/reads.fasta --query in/query.fasta --outputdir out/
+./src/main.py -k 10 --in_dir input/directory --out_dir output/directory --save_adjacency -t 10
 ```
+**Arguments:**
+`k`: the number of letters in each `k`mer read fragment.
+_Note: higher values of `k` result in a greater quantity of unique kmers, this can become unwieldly very quickly._ \
 
-This will create three files in the `output` directory:
+`in_dir`: directory including `QUERY` and `READS` fasta files. 
+
+`out_dir`: directory where results are saved. 
+
+`save_adjacency`: the adjacency matrix of the  graph encoding kmer connections. 
+
+`t`: the kmer frequency filtering threshold. Kmers with counts < `t` are removed from the graph. 
+
+**Output**
+Running `./src/main.py` will create three files in the `output` directory:
 
 - `ALLELES.aln` : tab-delimited text file describing alignment of sequence reads to contig(s) in `ALLELES.fasta`
 - `ALLELES.fasta` : fasta file of the largest constructed contig (allele) containing the initial query

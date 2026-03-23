@@ -1,35 +1,71 @@
 import networkx as nx
 import matplotlib.pyplot as plt
-import seaborn as sns
 import os
+import sys
+import subprocess as sp
 from pathlib import Path
-from pprint import pprint
-import pygraphviz
 
-
-# raise NameError("need to fix how i ignore already seen reads. currently i return the contig if my next has been visited for simple cycle and branch that means i only explore the one path and not the branch as well\nadd repeat resolution where read locations are found based on alignment with main contigs")
 
 os.chdir("/Users/canderson/Documents/school/res-meth-class/programming-assignment/versions/version002")
 from src.functions import *
 
-# in_dir = Path("")
+
 out_dir = Path("out/test2")
 out_dir.mkdir(exist_ok=True)
+in_dir = Path('in/test2')
+in_dir.mkdir(exist_ok=True)
 
 
 #\\\\
 #\\\\
+# Simulate strings from sentences
 #\\\\
 #\\\\
-
-# Run on sentence 
+ 
 query = 'dirtywetholefilledwiththeendsofwormsandanoozysmell'
 txt = "inaholeinthegroundtherelivedahobbitnotanastydirtywetholefilledwiththeendsofwormsandanoozysmellnoryetadrybaresandyholewithnothinginittositdownonortoeatitwasahobbitholeandthatmeanscomfort"
-k = 5
-counter = segment(txt, k)
 
-# make adjacency matrix between each kmer
-adj = make_adj(counter)
+
+# write random segments to fasta
+np.random.seed(210320) 
+with open(in_dir/"READS.fasta", 'wt', encoding = "UTF+8") as f:
+    for i in range(1000):
+        lngth = np.random.choice(np.arange(5,10))
+        strt = np.random.choice(range(len(txt)- lngth))
+        end = strt+lngth
+        f.write(f">{i}_sim:1234\n{txt[strt:end]}\n")
+
+with open(in_dir / "QUERY.fasta", 'wt', encoding = "UTF+8") as f:
+    f.write(f">QUERY\n{query}\n>>0_generative_seq:1234\n{txt}\n")
+
+#\\\\
+#\\\\
+# Find Contigs
+#\\\\
+#\\\\
+
+k = 5
+sp.run([
+    './src/main.py',
+    '--out_dir', out_dir,
+    '--in_dir', in_dir,
+    '-k', str(k),
+    '--save_adjacency'
+])
+
+
+#\\\\
+#\\\\
+# Load results
+#\\\\
+#\\\\
+
+contigs = np.loadtxt(out_dir/"contigs.txt", dtype=str)
+adj = pd.read_csv(out_dir/"adjacency.csv", 
+                  index_col = 0)
+
+q_contigs = np.loadtxt(out_dir/"query-contigs.txt", dtype=str)
+print_contigs_with_context(q_contigs, query, context=20)
 
 #\\\\
 # Plot Graph
@@ -52,35 +88,3 @@ fig = plt.figure(figsize = (30,30))
 nx.draw(G,pos,with_labels=True,**options)
 plt.savefig(out_dir/'graph.pdf')
 plt.close()
-
-#\\\
-#\\\
-# Find Contigs
-#\\\
-#\\\
-contigs = make_contigs(adj)
-print(f"{len(contigs)} contigs found")
-contig_summary = summarize(np.array([len(x) for x in contigs]))
-pprint(contig_summary)
-
-with open(out_dir/ "contigs.txt", 'w') as f:
-    for contig in contigs:
-        f.write(f"{contig}\n")
-
-candidate_sequences = [contig for contig in contigs if query in contig]
-with open(out_dir/ "query-contigs.txt", 'w') as f:
-    for contig in candidate_sequences:
-        f.write(f"{contig}\n")
-
-
-# start = pd.Series([x[:k] for x in contigs]).value_counts().idxmax()
-# end = pd.Series([x[-k:] for x in contigs]).value_counts().idxmax()
-
-max_length = max([len(x) for x in contigs])
-longest = [contig for contig in contigs if contig[:k]==start and contig[-k:] == end and len(contig) > contig_summary["Q3"] ]
-
-with open(out_dir/ "longest-contigs.txt", 'w') as f:
-    for contig in longest:
-        f.write(f"{contig}\n")
-
-

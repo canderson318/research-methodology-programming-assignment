@@ -1,40 +1,18 @@
 import networkx as nx
 import matplotlib.pyplot as plt
-import seaborn as sns
 import os
-from pathlib import Path
-from pprint import pprint
 import subprocess as sp
+from pathlib import Path
 
-# raise NameError("need to fix how i ignore already seen reads. currently i return the contig if my next has been visited for simple cycle and branch that means i only explore the one path and not the branch as well\nadd repeat resolution where read locations are found based on alignment with main contigs")
 
 os.chdir("/Users/canderson/Documents/school/res-meth-class/programming-assignment/versions/version002")
 from src.functions import *
 
 
-out_dir = Path("out/test1")
+out_dir = Path("out/assigned")
 out_dir.mkdir(exist_ok=True)
-in_dir = Path('in/test1')
+in_dir = Path('in/assigned')
 in_dir.mkdir(exist_ok=True)
-
-#\\\
-#\\\
-# Simulate strings that will have a simple graph with cycles
-#\\\
-#\\\
-query = 'STRT'
-txt = "STRTABCDEFGABCHIJKDEFEND"
-
-# write random segments to fasta
-with open(in_dir/"READS.fasta", 'wt', encoding = "UTF+8") as f:
-    for i in range(100):
-        lngth = np.random.choice(np.arange(5,10))
-        strt = np.random.choice(range(len(txt)- lngth))
-        end = strt+lngth
-        f.write(f">{i}_sim:1234\n{txt[strt:end]}\n")
-
-with open(in_dir / "QUERY.fasta", 'wt', encoding = "UTF+8") as f:
-    f.write(f">QUERY\n{query}\n>>0_generative_seq:1234\n{txt}\n")
 
 #\\\\
 #\\\\
@@ -42,25 +20,39 @@ with open(in_dir / "QUERY.fasta", 'wt', encoding = "UTF+8") as f:
 #\\\\
 #\\\\
 
-k = 3
+k = 6
+thresh = t = 10
 sp.run([
     './src/main.py',
     '--out_dir', out_dir,
     '--in_dir', in_dir,
     '-k', str(k),
-    '--save_adjacency'
+    '--save_adjacency',
+    '-t', str(t)
 ])
 
+
+#\\\\
+#\\\\
+# Load results
+#\\\\
+#\\\\
+query = np.loadtxt(in_dir/"QUERY.fasta", dtype = str)[1]
 contigs = np.loadtxt(out_dir/"contigs.txt", dtype=str)
-adj = pd.read_csv(out_dir/"adjacency.csv", index_col = 0)
 
-q_contigs = np.loadtxt(out_dir/"query-contigs.txt", dtype=str)
-print_contigs_with_context(q_contigs, query, context=20)
+try:
+    q_contigs = np.loadtxt(out_dir/"query-contigs.txt", dtype=str)
+    print_contigs_with_context(q_contigs, query, context=20)
+except:
+    print("No query contigs found.")
 
+adj = pd.read_csv(out_dir/"adjacency.csv", 
+                  index_col = 0)
 
 #\\\\
 # Plot Graph
 #\\\\
+
 
 # fewest incomming edges
 start = adj.sum(0).idxmin() # min colsums

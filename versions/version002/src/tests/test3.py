@@ -4,15 +4,16 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 import os
 from pathlib import Path
-from pprint import pprint
-
+import subprocess as sp
 
 os.chdir("/Users/canderson/Documents/school/res-meth-class/programming-assignment/versions/version002")
 from src.functions import *
 
-in_dir = Path("in/simulated1")
+
 out_dir = Path("out/test3")
 out_dir.mkdir(exist_ok=True)
+in_dir = Path('in/test3')
+in_dir.mkdir(exist_ok=True)
 
 #\\\\
 #\\\\
@@ -36,28 +37,34 @@ _ , query = parse(QUERY) # len 1 list of single query
 query = query[0] # str query
 headers, sequences = parse(READS) # two lists
 
-# Run on sequences
-seq_summary = seq_summary(sequences) # read length stats
-pprint(seq_summary)
 
-# # use k as the some tail of read length distribution
-# k = seq_summary["Q3"].round().astype(int)
-k = 6
-counter = segment_all(sequences, k)
-# filter for frequent reads
-counter = Counter({k: v for k, v in counter.items() if v > 1})
 
-len(counter)
-kmer_lens = np.array([len(x) for x in counter])
-pprint(summarize(kmer_lens))
 
-# make adjacency matrix between each kmer
-adj = make_adj(counter)
+#\\\\
+#\\\\
+# Find Contigs
+#\\\\
+#\\\\
 
+k = 8
+sp.run([
+    './src/main.py',
+    '--out_dir', out_dir,
+    '--in_dir', in_dir,
+    '-k', str(k),
+    '--save_adjacency'
+])
+
+contigs = np.loadtxt(out_dir/"contigs.txt", dtype=str)
+adj = pd.read_csv(out_dir/"adjacency.csv", index_col = 0)
+
+q_contigs = np.loadtxt(out_dir/"query-contigs.txt", dtype=str)
+print_contigs_with_context(q_contigs, query, context=20)
 
 #\\\\
 # Plot Graph
 #\\\\
+
 # fewest incomming edges
 start = adj.sum(0).idxmin() # min colsums
 # fewest outgoing edges
@@ -75,41 +82,3 @@ fig = plt.figure(figsize = (30,30))
 nx.draw(G,pos,with_labels=True,**options)
 plt.savefig(out_dir/'graph.pdf')
 plt.close()
-
-
-
-# \\\
-# Find Contigs
-# \\\
-contigs = make_contigs(adj)
-print(f"{len(contigs)} contigs found")
-contig_summary = summarize(np.array([len(x) for x in contigs]))
-pprint(contig_summary)
-
-with open(out_dir/ "contigs.txt", 'w') as f:
-    for contig in contigs:
-        f.write(f"{contig}\n")
-
-candidate_sequences = [contig for contig in contigs if query in contig]
-with open(out_dir/ "query-contigs.txt", 'w') as f:
-    for contig in candidate_sequences:
-        f.write(f"{contig}\n")
-
-# start = pd.Series([x[:k] for x in contigs]).value_counts().idxmax()
-# end = pd.Series([x[-k:] for x in contigs]).value_counts().idxmax()
-
-
-lengths = np.array([len(x) for x in contigs])
-
-# longest = [contig for contig in contigs if contig[:k]==start and contig[-k:] == end and len(contig) > contig_summary["Q3"] ]
-
-# get top 100 or all longest contigs
-longest_idx = np.argsort(-lengths)[:(min(100, len(lengths)))]
-longest = np.array(contigs)[longest_idx]
-print(lengths[longest_idx])  # should show values near 256
-
-with open(out_dir/ "longest-contigs.txt", 'w') as f:
-    for contig in longest:
-        f.write(f"{contig}\n")
-
-

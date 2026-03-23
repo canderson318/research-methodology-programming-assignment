@@ -2,6 +2,7 @@
 
 import sys
 from pathlib import Path
+import time
 # Add src directory to path
 sys.path.insert(0, str(Path(__file__).parent))
 import argparse
@@ -14,7 +15,7 @@ def parse_args():
     parser = argparse.ArgumentParser(
         prog='main',
         description='Find longest contiguous sequence containing a query from fasta reads.',
-        usage='./main.py -k 10 --in_dir input/directory --out_dir output/directory --save_adjacency '
+        usage='./main.py -k 10 --in_dir input/directory --out_dir output/directory --save_adjacency -t 10'
     )
 
     # file to read songs from
@@ -50,41 +51,65 @@ def parse_args():
         help='Save Kmer adjacency matrix to `out_dir`.'
     )
     
+    parser.add_argument(
+        '-t', '--filter_threshold',
+        type = int,
+        default=1, 
+        required = False,
+        help='Filter out kmers with frequency below this value.'
+    )
+    
     return parser.parse_args()
 
 def main(): 
     
     args = parse_args()
     k = args.k
+    thresh = args.filter_threshold
     save_adj = args.save_adjacency
     in_dir = Path(args.in_dir)
     out_dir = Path(args.out_dir)
     out_dir.mkdir(exist_ok=True)
     
+    # load data
     fastas = load_data(in_dir)
-
     READS , QUERY = fastas['READS'], fastas['QUERY']
 
     print("Processing reads...")
+    print("\tparsing reads...")
     _ , query = parse(QUERY) # len 1 list of single query
     query = query[0] # str query
     headers, sequences = parse(READS) # two lists
 
     # count kmers
-    counter = segment_all(sequences, k)
+    print("\tsegmenting reads and counting kmers...")
+    counter, kmer_mapping = segment_all(sequences, k)
+    print(f"\t\t{counter.__len__():,} unique {k}-mers from {len(sequences):,} total reads")
+    
     # filter for frequent reads
-    counter = Counter({k: v for k, v in counter.items() if v > 1})
+    print(f"\tfiltering for kmer count > {thresh}...")
+    counter = Counter({k: v for k, v in counter.items() if v > thresh})
+    kmer_mapping = {kmer:value for kmer,value in kmer_mapping.items() if kmer in counter}
+    print(f"\t\t{counter.__len__():,} unique {k}-mers after filtering")
 
     # make adjacency matrix between each kmer
+    print("\tmaking adjacency matrix...")
+    t0 = time.time()
     adj = make_adj(counter)
+    t1 = time.time()
+    dt =(t1 - t0)
+    print(f"\t\t{dt:.0f} s")
     if save_adj:
-        print("Saving adjacency...")
-        adj.to_csv(out_dir/ "adjacency.csv")
+        print("\tSaving adjacency...")
+        adj.to_csv(out_dir/ "adjacency.csv", index=True)
 
     # Find Contigs
     print("Finding contigs...")
-    contigs = make_contigs(adj)
-    print(f"{len(contigs)} contigs found")
+    t0 = time.time()
+    contigs = make_contigs(query, adj)
+    t1 = time.time()
+    dt =(t1 - t0)
+    print(f"{dt:.3f} seconds, {len(contigs)} contigs found")
     print("Saving...")
 
     with open(out_dir/ "contigs.txt", 'w') as f:
