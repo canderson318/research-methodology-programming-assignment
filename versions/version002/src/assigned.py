@@ -20,8 +20,9 @@ in_dir.mkdir(exist_ok=True)
 #\\\\
 #\\\\
 
-k = 140
-t = 3
+# k = 10 # odd for no palindrome
+k = 32 # or 33
+thresh = t = 3
 sp.run([
     './src/main.py',
     '--out_dir', out_dir,

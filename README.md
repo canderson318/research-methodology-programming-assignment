@@ -23,7 +23,7 @@ Set up your conda environment using the environment file `environment.yaml`
 conda env create -f environment.yaml
 ```
 
-## Execution
+## Usage
 
 Below is an example execution for next-gen reads `reads.fasta` and a query sequence `query.fasta` both in fasta format. 
 **Example directory tree:**

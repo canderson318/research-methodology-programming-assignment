@@ -1,3 +1,8 @@
+## notes:
+# - build from both ends using k length substring of query
+# - look at subgraph connected to query kmers
+# - use coverage to weight
+# - store only current previous and next
 
 from ast import Dict, Tuple
 import numpy as np
@@ -80,7 +85,7 @@ def seq_summary(sequences):
 
 
 def align(s1,s2):
-    """see if two same length strings match perfectly overlap 1: with :-1 """
+    """see if two same length strings match perfectly overlap s1[-1] == s2[-end]; for hat, cha -> lower diagonal = 0 (at != ch), upper diagonal = 1 (ha == ha)"""
     k = len(s1)
     # return s1[1:k] == s2[0:(k-1)]
     return s1[1:] == s2[:-1]
@@ -155,7 +160,7 @@ def make_adj(counter:Counter):
 #         """add contig to contigs list if query string in current expanded branch"""
 #         branch = "".join(str_index[contig])
 #         if query in branch:
-#             contigs.append(np.array(contig, dtype=np.int16))
+#             contigs.append(np.array(contig, dtype=np.int64))
             
 #     def _recurse(curr, contig, visited): 
 #         """recurse through graph saving array of int indices if query in string those indices specify"""
@@ -184,7 +189,7 @@ def make_adj(counter:Counter):
 #             _save_if_match(contig)
 
 #     str_index = adj.columns.values
-#     indxs = np.arange(adj.shape[0],dtype= np.int16)
+#     indxs = np.arange(adj.shape[0],dtype= np.int32)
 #     adj_np = (adj>0).to_numpy().astype(np.int8)
 
 #     # start nodes are those with fewest incoming edges
@@ -197,45 +202,95 @@ def make_adj(counter:Counter):
         
 #     return contigs
 
-
-def make_contigs_from_adj(query: str, adj: pd.DataFrame):
-    """Iteratively search along adjacency matrix for indices of contiguous strings"""
-    str_index = adj.columns.values
-    indxs = np.arange(adj.shape[0], dtype=np.int16)
-    adj_np = (adj > 0).to_numpy().astype(np.int8)
+# def make_contigs_from_adj(query: str, adj: pd.DataFrame):
+#     """Iteratively search along adjacency matrix for indices of contiguous strings"""
+#     str_index = adj.columns.values
+#     indxs = np.arange(adj.shape[0], dtype=np.int32)
+#     adj_np = (adj > 0).to_numpy().astype(np.int8)
     
-    colsums = adj_np.sum(axis=0)
-    starts = indxs[colsums == colsums.min()]
-    contigs = []
+#     colsums = adj_np.sum(axis=0)
+#     starts = indxs[colsums == colsums.min()]
+#     contigs = []
     
-    def _save_if_match(contig):
-        """add contig to contigs list if query string in current expanded branch"""
-        branch = "".join(str_index[contig])
-        if query in branch:
-            contigs.append(np.array(contig, dtype=np.int16))
+#     def _save_if_match(contig):
+#         """add contig to contigs list if query string in current expanded branch"""
+#         string = "".join(str_index[np.array(contig)])
+#         if query in string:
+#             contigs.append(np.array(contig, dtype=np.int32))
     
-    for start in starts:
-        states = [(start, [start], {start})]  # (curr, contig, visited)
+#     for start in starts:
+#         states = [(start, [start], {start})]  # (curr, contig, visited)
         
-        while states: # len(states) > 0
-            curr, contig, visited = states.pop()
-            row = adj_np[curr]
-            nexts = indxs[row > 0]
+#         while states: # len(states) > 0
+#             curr, contig, visited = states.pop()
+#             row = adj_np[curr]
+#             nexts = indxs[row > 0]
             
-            if len(nexts) == 0:
-                _save_if_match(contig)
-                continue
+#             if len(nexts) == 0:
+#                 _save_if_match(contig)
+#                 continue
             
-            grew = False
-            for nxt in nexts:
-                if nxt not in visited:
-                    grew = True
-                    states.append((nxt, contig + [nxt], visited | {nxt}))
-            
-            if not grew:
-                _save_if_match(contig)
+#             grew = False
+#             for nxt in nexts:
+#                 if nxt not in visited:
+#                     grew = True
+#                     states.append((nxt, contig + [nxt], visited | {nxt}))
+#             if not grew:
+#                 _save_if_match(contig)
+#     return contigs
+
+def construct_string_from_debrujin(kmers:NDArray, inds: NDArray):
+    """Construct continuous string for debrujin graph path, appending every last character to string"""
+    string = kmers[inds[0]] 
+    for ind in inds[1:]:
+        string+=kmers[ind][-1]
+    return string
+
+def make_contigs_from_adj(query: str, adj: pd.DataFrame)->list[tuple[str,NDArray[np.int32]]]:
+    """Iteratively search along adjacency matrix for indices of contiguous strings"""
+
+    def _get_starts(adj):
+        col_sums = adj.sum(0)
+        return np.argwhere(col_sums == col_sums.min()).ravel().astype(np.int32)
+    def _get_nexts(curr):
+        return np.argwhere(adj_np[curr, :] > 0).ravel().astype(np.int32)
+    def _save(contig):
+        """check if contig inds contain teh query string, if so save"""
+        # append last char consecutively
+        string = construct_string_from_debrujin(str_index, contig)
+        if query in string:
+            contig_arr = np.array(contig)
+            contig_res.append((string,contig_arr))
     
-    return contigs
+    str_index = adj.columns.values
+    adj_np = (adj > 0).to_numpy().astype(np.int8)
+    starts = _get_starts(adj_np)
+    contig_res = []
+
+    for start in starts:
+        
+        states = [(start, [start], {start})]
+
+        while states:
+            # get current states
+            current, contig, visited = states.pop() # take the last element of the list ( a tuple )
+            nxts = _get_nexts(current)
+
+            if len(nxts) == 0:
+                _save(contig)
+                continue
+
+            for nxt in nxts:
+                if nxt in visited:
+                    _save(contig)
+                    continue
+                # update states pushing forward through tree
+                #++ current:=nxt, contig:= contig+[nxt], visited:= visited + nxt
+                #++ each item of states is a tuple encoding the [current, extending branch, and visited nodes]
+                states.append((nxt, contig + [nxt], visited | {nxt}))  
+
+    return contig_res
+
 
 # def make_contigs_from_1D_array(query:str, kmers: NDArray, save_only_match = True):
 #     inds = np.arange(len(kmers), dtype=np.int32)
