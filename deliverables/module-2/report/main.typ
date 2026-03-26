@@ -12,7 +12,7 @@ rsync -a --progress --ignore-times /Users/canderson/Documents/school/res-meth-cl
 // Document Settings
 ////////////////////
 #set page(margin: 1in, width: 8.5in, height: 11in, numbering: "1")
-#let fntsz = 11pt
+#let fntsz = 10pt
 #let after = fntsz * 1.5
 #set text(font: "Georgia", size: fntsz)
 #set par(leading: fntsz, spacing: after)
@@ -97,7 +97,7 @@ My goals for the second module of this project were as follows:
       - Traverse every path from some set of starting nodes #sym.checkmark
       - Construct contig along the way #sym.checkmark
       - #strong[Save contigs containing query sequence]
-  - Create a Github repo #sym.checkmark
+  - Create a #gh repo #sym.checkmark
 ]
 Since my initial brainstorming for this project summarized in my Module-1 talk, I have completed nearly all of my goals (checkmarked, #sym.checkmark). I still need to identify contigs containing the query sequence due to my code's current limitations (@nextsteps).
 
@@ -287,12 +287,16 @@ def make_contigs_from_adj(query, adj):
 
 ```
 
-#pagebreak()
-#text(red)[
-  - A well documented and organized GitHub repository.
-  - A written report containing
-    - An update on the proposed timeline
-    - Full write ups of completed components. These sections should include details on the solution - and analysis of results.
-    - Stubs for partially completed components
-]
+// #pagebreak()
+// #text(red)[
+//   - A well documented and organized GitHub repository.
+//   - A written report containing
+//     - An update on the proposed timeline
+//     - Full write ups of completed components. These sections should include details on the solution - and analysis of results.
+//     - Stubs for partially completed components
+// ]
 
+// typst compile main.typ
+// git add main.pdf
+// git commit -m  "Recompile report"
+// git push

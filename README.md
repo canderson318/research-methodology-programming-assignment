@@ -7,7 +7,7 @@ __Spring 2026__ -->
 This repo contains code that finds the longest contiguous sequence that contains a query sequence from a query sequence and fasta format file of next-gen sequencing reads.
 
 *__Find the assignment description [here](assignment.md).__*
-*__Find the assignment report [here](deliverables/module-2/main.pdf).__*
+*__Find the assignment report [here](deliverables/module-2/report/main.pdf).__*
 
 ### Motivation
 There are many applications wherein a researcher would like to know the sequence context around a given query sequence they suspect exists in their sample. For example, gene targeting may be used to create a knock-out model and the researcher would like to verify that the target vector was incorporated into the right place in the genome. Alternatively, a researcher might wish to fully identify suspected contaminating sequences that would indicate the presence and/or source of unclean sample handling procedures in the laboratory, such as a specific PCR primer contamination.
@@ -118,7 +118,10 @@ Example output.aln file:
 	- `make_adj`
 		- make adjacency matrix between every combination of strings in Counter where matches fill matrix with a 1, and non-matches a 0 
 	- `make_contigs`
-		- take an adjacency matrix from `make_adj` and recursively following all possible paths through it, appending contigs along the way
+		- take an adjacency matrix from `make_adj` and iteratively following all possible paths through it, appending contigs along the way
 
 #### `simulate_reads.py`
 - Simulates random reads of a specific length and writes these to a fasta format including the ground truth sequence
+
+#### `assigned.py` 
+- Script where args are formatted into `main.py` to query reads.
