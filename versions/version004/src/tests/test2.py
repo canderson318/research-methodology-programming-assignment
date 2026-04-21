@@ -1,4 +1,3 @@
-import time
 from pprint import pprint
 import networkx as nx
 import matplotlib.pyplot as plt
@@ -6,9 +5,9 @@ import os
 import sys
 import subprocess as sp
 from pathlib import Path
+import pickle as pkl
 
-
-os.chdir("/Users/canderson/Documents/school/res-meth-class/programming-assignment/versions/version002")
+os.chdir("/Users/canderson/Documents/school/res-meth-class/programming-assignment/versions/version004")
 from src.functions import *
 
 
@@ -16,7 +15,7 @@ out_dir = Path("out/test2")
 out_dir.mkdir(exist_ok=True)
 in_dir = Path('in/test2')
 in_dir.mkdir(exist_ok=True)
-
+os.listdir(out_dir)
 
 #\\\\
 #\\\\
@@ -24,7 +23,7 @@ in_dir.mkdir(exist_ok=True)
 #\\\\
 #\\\\
  
-query = 'oundtherelivedahobbitnotanastydirtywetholefilledwiththeendsofwormsand'
+query = 'obbitnotanast'
 txt = "inaholeinthegroundtherelivedahobbitnotanastydirtywetholefilledwiththeendsofwormsandanoozysmellnoryetadrybaresandyholewithnothinginittositdownonortoeatitwasahobbitholeandthatmeanscomfort"
 
 
@@ -38,11 +37,11 @@ txt = "inaholeinthegroundtherelivedahobbitnotanastydirtywetholefilledwiththeends
 #         end = strt+lngth
 #         f.write(f">{i}_sim:1234\n{txt[strt:end]}\n")
 
-# write random segments to fasta
+# write nonrandom segments to fasta
 with open(in_dir/"READS.fasta", 'wt', encoding = "UTF+8") as f:
     lngth = 10
     for i in range(len(txt)-lngth):
-        f.write(f">{i}_sim:1234\n{txt[i:(i+lngth)]}\n")
+        f.write(f">{i}_sim:1234\n{txt[i:(i+lngth+1)]}\n")
 
 with open(in_dir / "QUERY.fasta", 'wt', encoding = "UTF+8") as f:
     f.write(f">QUERY\n{query}\n>>0_generative_seq:1234\n{txt}\n")
@@ -53,7 +52,7 @@ with open(in_dir / "QUERY.fasta", 'wt', encoding = "UTF+8") as f:
 #\\\\
 #\\\\
 k = 5
-t=1
+t=0
 save_adj = True; thresh = t; 
 
 # Run
@@ -77,24 +76,21 @@ q_contigs = np.loadtxt(out_dir/"ALLELES.fasta", dtype=str)
 q_contigs = q_contigs[np.arange(len(q_contigs))%2 !=0] # contigs are odd items
 print_contigs_with_context(q_contigs[:10], query, context=20)
 
-adj = pd.read_csv(out_dir/"adjacency.csv", 
-                  index_col = 0)
+edge_list = pkl.load(open(out_dir/"edge_list.pkl", 'rb'))
+
 #\\\\
 # Plot Graph
 #\\\\
+edge_list = [(key,x) 
+             for key, val in edge_list.items() 
+             if val[1] is not None
+             for x in val[1]
+             ]
 
-# fewest incomming edges
-start = adj.sum(0).idxmin() # min colsums
-# fewest outgoing edges
-end = adj.sum(1).idxmin() # max rowsums
+G = nx.from_edgelist(edge_list)
 
-G = nx.from_pandas_adjacency(adj, create_using=nx.DiGraph)
-node_colors = ["red" if n in start else "blue" if n in end else "None" for n in G.nodes()]
-
-# pos = nx.spring_layout(G, seed=1048, method = 'energy', weight = None, k = 100)
-# pos = nx.rescale_layout(pos, .2)
 pos = nx.nx_agraph.graphviz_layout(G,prog = 'neato')
-options = {"font_size": 15,"node_size": 1000,"node_color": node_colors,"edgecolors": None,"edge_color": "darkgrey","linewidths": 1,"width": 2}
+options = {"font_size": 15,"node_size": 1000,"node_color": 'none',"edgecolors": 'none',"edge_color": "darkgrey","linewidths": 1,"width": 2}
 
 fig = plt.figure(figsize = (30,30))
 nx.draw(G,pos,with_labels=True,**options)

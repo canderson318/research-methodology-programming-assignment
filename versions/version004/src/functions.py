@@ -90,235 +90,84 @@ def align(s1,s2):
     # return s1[1:k] == s2[0:(k-1)]
     return s1[1:] == s2[:-1]
 
+def make_contigs(kmer_mapping: Dict, query: str, k: int, max_visits: int = 2):
+    """
+    Build edge dict for the subgraph anchored on query k-mers, extended outward
+    in both directions through read k-mers.
 
-def make_adj(counter:Counter):
-    """Make an adjacency matrix between each combination from list of strings. fil matrix with (str1==str2) * average(counts)"""
-    lngth = len(counter)
-    keys = list(counter.keys())
-    vals = list(counter.values())
+    max_visits: how many times a single path may traverse the same k-mer before
+                stopping. 1 = classic visited-set behaviour. 2+ = allows passing
+                through repeated k-mers (e.g. 'hole' in hobbit text) up to that
+                many times before declaring a cycle.
+
+    Returns: left_contigs, right_contigs, edge_list
+    """
     
-    # mat = pd.DataFrame(np.zeros(lngth**2).reshape((lngth, lngth)), index = list(counter), columns = list(counter), dtype = float)
-    
-    # numpy for speed
-    mat = np.zeros((lngth, lngth))
+    keys = list(kmer_mapping.keys())
+    query_keys = list(segment(query, k).keys())
+    first, last = query_keys[0], query_keys[-1]
 
-    for i in range(lngth):
-        s1, v1 = keys[i], vals[i]
-        for j in range(lngth):
-            s2, v2 = keys[j], vals[j]
-            if i != j:
-                # fill with alignment * the average frequency of both
-                mat[i,j] = float(align(s1,s2)) * .5 * (v1+v2)
-    # return DF version
-    return pd.DataFrame(mat, index=keys, columns=keys)
+    def _connect(kmer: str, candidates: list, mapping_dict: Dict):
+        """(prev_tuple|None, next_tuple|None, indices)"""
+        if kmer not in candidates:
+            return (None, None, mapping_dict.get(kmer, 0))
+        whr_kmer = candidates.index(kmer)
+        fwd_mask = np.array([align(kmer, x) for x in candidates])  # kmer -> x
+        rev_mask = np.array([align(x, kmer) for x in candidates])  # x -> kmer
+        fwd_mask[whr_kmer] = False
+        rev_mask[whr_kmer] = False
+        fwd = tuple(candidates[i] for i in np.where(fwd_mask)[0])
+        rev = tuple(candidates[i] for i in np.where(rev_mask)[0])
+        return (
+            rev if rev_mask.any() else None,
+            fwd if fwd_mask.any() else None,
+            mapping_dict.get(kmer, 0),
+        )
 
+    edge_list = {}
 
-# def make_contigs_from_adj(adj: pd.DataFrame):
-#     """Recursively search along adjacency matrix for contiguous strings"""
-#     def _recurse(curr, contig, visited):
+    # Anchor every query k-mer into the read k-mer graph
+    for kmer in query_keys:
+        edge_list[kmer] = _connect(kmer, keys, kmer_mapping)
 
-#         row = adj_np[indxs == curr].ravel()
-#         nexts = indxs[row > 0]
-#         # if terminal string, end contig else continue growing contig
-#         if len(nexts) == 0:
-#             contigs.append(contig)
-#             return
-        
-#         # track if a branch grew
-#         grew = False
+    # Traverse left: follow predecessors backward from first
+    # visited is a count dict — stop a branch when any node hits max_visits
+    to_explore = [(p, [p], {p: 1}) for p in (edge_list[first][0] or [])]
+    left_contigs = []
+    while to_explore:
+        curr, contig, visited = to_explore.pop()
+        if curr not in edge_list:
+            edge_list[curr] = _connect(curr, keys, kmer_mapping)
+        preds = edge_list[curr][0]
+        if not preds:
+            left_contigs.append(contig)
+            continue
+        for p in preds:
+            count = visited.get(p, 0)
+            if count >= max_visits:
+                left_contigs.append(contig)  # cycle ->> save and stop branch
+            else:
+                to_explore.append((p, [p] + contig, {**visited, p: count + 1}))
 
-#         # for each next add to contig if not see already, if seen already, return contig to contigs list
-#         for nxt in nexts:
-#             if nxt in visited: # if seen (cycle) stop writing to this contig
-#                 contigs.append(contig)
-#                 continue
-#             grew = True
-#             new_visited = visited | {nxt} # add to visited set
-#             _recurse(nxt,contig + nxt[-1],new_visited)
-        
-#         # if no branches could be grew (all looped back (cycles)), save current contig 
-#         ##++ (otherwise a branch may not be returned to contig list)
-#         if not grew:
-#             contigs.append(contig)
+    # Traverse right: follow successors forward from last
+    to_explore = [(s, [s], {s: 1}) for s in (edge_list[last][1] or [])]
+    right_contigs = []
+    while to_explore:
+        curr, contig, visited = to_explore.pop()
+        if curr not in edge_list:
+            edge_list[curr] = _connect(curr, keys, kmer_mapping)
+        succs = edge_list[curr][1]
+        if not succs:
+            right_contigs.append(contig)
+            continue
+        for s in succs:
+            count = visited.get(s, 0)
+            if count >= max_visits:
+                right_contigs.append(contig)  # cycle ->> save and stop branch
+            else:
+                to_explore.append((s, contig + [s], {**visited, s: count + 1}))
 
-#     indxs = adj.columns.to_numpy()
-#     adj_np = adj.to_numpy()
-
-#     # start nodes are those with fewest incoming edges
-#     colsums = adj_np.sum(axis=0)
-#     starts = indxs[colsums == colsums.min()]
-#     contigs = []
-    
-#     for start in starts:
-#         _recurse(start,start,set({start}))
-        
-#     return contigs
-
-# def make_contigs_from_adj(query:str, adj: pd.DataFrame):
-#     """Recursively search along adjacency matrix for indices of contiguous strings"""
-#     def _save_if_match(contig):
-#         """add contig to contigs list if query string in current expanded branch"""
-#         branch = "".join(str_index[contig])
-#         if query in branch:
-#             contigs.append(np.array(contig, dtype=np.int64))
-            
-#     def _recurse(curr, contig, visited): 
-#         """recurse through graph saving array of int indices if query in string those indices specify"""
-#         row = adj_np[indxs == curr].ravel()
-#         nexts = indxs[row > 0]
-#         # if terminal string, end contig else continue growing contig
-#         if len(nexts) == 0:
-#             _save_if_match(contig)
-#             return
-        
-#         # track if a branch grew
-#         grew = False
-
-#         # for each next add to contig if not see already, if seen already, return contig to contigs list
-#         for nxt in nexts:
-#             if nxt in visited: # if seen (cycle) stop writing to this contig
-#                 _save_if_match(contig)
-#                 continue
-#             grew = True
-#             new_visited = visited | {nxt} # add to visited set
-#             _recurse(nxt,contig+[nxt],new_visited)
-        
-#         # if no branches could be grew (all looped back (cycles)), save current contig 
-#         ##++ (otherwise a branch may not be returned to contig list)
-#         if not grew:
-#             _save_if_match(contig)
-
-#     str_index = adj.columns.values
-#     indxs = np.arange(adj.shape[0],dtype= np.int32)
-#     adj_np = (adj>0).to_numpy().astype(np.int8)
-
-#     # start nodes are those with fewest incoming edges
-#     colsums = adj_np.sum(axis=0)
-#     starts = indxs[colsums == colsums.min()]
-#     contigs = []
-    
-#     for start in starts:
-#         _recurse(start,[start],set({start}))
-        
-#     return contigs
-
-# def make_contigs_from_adj(query: str, adj: pd.DataFrame):
-#     """Iteratively search along adjacency matrix for indices of contiguous strings"""
-#     str_index = adj.columns.values
-#     indxs = np.arange(adj.shape[0], dtype=np.int32)
-#     adj_np = (adj > 0).to_numpy().astype(np.int8)
-    
-#     colsums = adj_np.sum(axis=0)
-#     starts = indxs[colsums == colsums.min()]
-#     contigs = []
-    
-#     def _save_if_match(contig):
-#         """add contig to contigs list if query string in current expanded branch"""
-#         string = "".join(str_index[np.array(contig)])
-#         if query in string:
-#             contigs.append(np.array(contig, dtype=np.int32))
-    
-#     for start in starts:
-#         states = [(start, [start], {start})]  # (curr, contig, visited)
-        
-#         while states: # len(states) > 0
-#             curr, contig, visited = states.pop()
-#             row = adj_np[curr]
-#             nexts = indxs[row > 0]
-            
-#             if len(nexts) == 0:
-#                 _save_if_match(contig)
-#                 continue
-            
-#             grew = False
-#             for nxt in nexts:
-#                 if nxt not in visited:
-#                     grew = True
-#                     states.append((nxt, contig + [nxt], visited | {nxt}))
-#             if not grew:
-#                 _save_if_match(contig)
-#     return contigs
-
-def construct_string_from_debrujin(kmers:NDArray, inds: NDArray):
-    """Construct continuous string for debrujin graph path, appending every last character to string"""
-    string = kmers[inds[0]] 
-    for ind in inds[1:]:
-        string+=kmers[ind][-1]
-    return string
-
-def make_contigs_from_adj(query: str, adj: pd.DataFrame)->list[tuple[str,NDArray[np.int32]]]:
-    """Iteratively search along adjacency matrix for indices of contiguous strings"""
-
-    def _get_starts(adj):
-        col_sums = adj.sum(0)
-        return np.argwhere(col_sums == col_sums.min()).ravel().astype(np.int32)
-    def _get_nexts(curr):
-        return np.argwhere(adj_np[curr, :] > 0).ravel().astype(np.int32)
-    def _save(contig):
-        """check if contig inds contain teh query string, if so save"""
-        # append last char consecutively
-        string = construct_string_from_debrujin(str_index, contig)
-        if query in string:
-            contig_arr = np.array(contig)
-            contig_res.append((string,contig_arr))
-    
-    str_index = adj.columns.values
-    adj_np = (adj > 0).to_numpy().astype(np.int8)
-    starts = _get_starts(adj_np)
-    contig_res = []
-
-    for start in starts:
-        
-        states = [(start, [start], {start})]
-
-        while states:
-            # get current states
-            current, contig, visited = states.pop() # take the last element of the list ( a tuple )
-            nxts = _get_nexts(current)
-
-            if len(nxts) == 0:
-                _save(contig)
-                continue
-
-            for nxt in nxts:
-                if nxt in visited:
-                    _save(contig)
-                    continue
-                # update states pushing forward through tree
-                #++ current:=nxt, contig:= contig+[nxt], visited:= visited + nxt
-                #++ each item of states is a tuple encoding the [current, extending branch, and visited nodes]
-                states.append((nxt, contig + [nxt], visited | {nxt}))  
-
-    return contig_res
-
-
-# def make_contigs_from_1D_array(query:str, kmers: NDArray, save_only_match = True):
-#     inds = np.arange(len(kmers), dtype=np.int32)
-#     contigs = set()  
-#     def _save(contig, on_match):
-#         string = "".join(kmers[np.array(list(contig))])
-#         if (query in string and on_match) or not on_match:
-#             contigs.add(contig)  
-#     for start in inds:
-#         state = [(start, (start,))]
-#         while state:
-#             curr, contig = state.pop()
-#             visited = set(contig)
-#             nxts = set(inds) - visited
-#             grew = False
-#             for nxt in nxts:
-#                 if align(kmers[curr], kmers[nxt]):
-#                     grew = True
-#                     state.append((nxt, contig + (nxt,)))
-#             if not grew:
-#                 _save(contig, save_only_match)
-
-#     return list(contigs)
-# kmers = np.array(list(counter.keys()))
-# C = make_contigs_from_1D_array(query, kmers, save_only_match = False)
-# with open("/Users/canderson/Desktop/test.txt", 'wt') as f:
-#     for inds in C:
-#         f.write(f"{"".join(kmers[np.array(inds)])}\n")
+    return left_contigs, right_contigs, edge_list
 
 def print_contig_with_context(contig, query, context):
     '''print string hilighting match with query'''

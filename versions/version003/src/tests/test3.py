@@ -6,7 +6,7 @@ import os
 from pathlib import Path
 import subprocess as sp
 
-os.chdir("/Users/canderson/Documents/school/res-meth-class/programming-assignment/versions/version002")
+os.chdir("/Users/canderson/Documents/school/res-meth-class/programming-assignment/versions/version003")
 from src.functions import *
 
 

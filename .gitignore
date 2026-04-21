@@ -2,3 +2,6 @@
 **pycache*
 *.csv
 *contigs.txt
+ALLELES*
+READS*
+*.pdf

@@ -3,9 +3,9 @@ import matplotlib.pyplot as plt
 import os
 import subprocess as sp
 from pathlib import Path
+import pickle as pkl
 
-
-os.chdir("/Users/canderson/Documents/school/res-meth-class/programming-assignment/versions/version002")
+os.chdir("/Users/canderson/Documents/school/res-meth-class/programming-assignment/versions/version004")
 from src.functions import *
 
 
@@ -33,40 +33,32 @@ sp.run([
 ], check = True)
 
 
-#\\\\
-#\\\\
-# Load results
-#\\\\
-#\\\\
-query = np.loadtxt(in_dir/"QUERY.fasta", dtype = str)[1]
-contigs = np.loadtxt(out_dir/"contigs.txt", dtype=str)
 
-try:
-    q_contigs = np.loadtxt(out_dir/"query-contigs.txt", dtype=str)
-    print_contigs_with_context(q_contigs, query, context=20)
-except:
-    print("No query contigs found.")
+#\\\\
+#\\\\
+# ––– Plot grpah
+#\\\\
+#\\\\
 
-adj = pd.read_csv(out_dir/"adjacency.csv", 
-                  index_col = 0)
+q_contigs = np.loadtxt(out_dir/"ALLELES.fasta", dtype=str)
+q_contigs = q_contigs[np.arange(len(q_contigs))%2 !=0] # contigs are odd items
+print_contigs_with_context(q_contigs[:10], query, context=100)
+
+edge_list = pkl.load(open(out_dir/"edge_list.pkl", 'rb'))
 
 #\\\\
 # Plot Graph
 #\\\\
+edge_list = [(key,x) 
+             for key, val in edge_list.items() 
+             if val[1] is not None
+             for x in val[1]
+             ]
 
+G = nx.from_edgelist(edge_list)
 
-# fewest incomming edges
-start = adj.sum(0).idxmin() # min colsums
-# fewest outgoing edges
-end = adj.sum(1).idxmin() # max rowsums
-
-G = nx.from_pandas_adjacency(adj, create_using=nx.DiGraph)
-node_colors = ["red" if n in start else "blue" if n in end else "None" for n in G.nodes()]
-
-# pos = nx.spring_layout(G, seed=1048, method = 'energy', weight = None, k = 100)
-# pos = nx.rescale_layout(pos, .2)
 pos = nx.nx_agraph.graphviz_layout(G,prog = 'neato')
-options = {"font_size": 15,"node_size": 1000,"node_color": node_colors,"edgecolors": None,"edge_color": "darkgrey","linewidths": 1,"width": 2}
+options = {"font_size": 15,"node_size": 1000,"node_color": 'none',"edgecolors": 'none',"edge_color": "darkgrey","linewidths": 1,"width": 2}
 
 fig = plt.figure(figsize = (30,30))
 nx.draw(G,pos,with_labels=True,**options)

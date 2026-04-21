@@ -31,7 +31,6 @@ Note: The files provided are data from a real sequencing run, with all inherent 
 
 - `ALLELES.aln` : tab-delimited text file describing alignment of sequence reads to contig(s) in
 - `ALLELES.fasta` : fasta file of the largest constructed contig (allele) containing the initial query
-- `ALLELES.tsv` : a tab separated table with the following columns (see example further below):
 
 	- `sseqid`
 		+ name of sequencing read (from READS.fastq.gz)
