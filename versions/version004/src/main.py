@@ -3,13 +3,15 @@
 import sys
 from pathlib import Path
 import time
+import pickle as pkl
 from pprint import pprint
+
 # Add src directory to path
 sys.path.insert(0, str(Path(__file__).parent))
 import argparse
-try: 
+try:
     from functions import *
-except: 
+except:
     raise ModuleNotFoundError
 
 def parse_args():
@@ -23,47 +25,52 @@ def parse_args():
     parser.add_argument(
         '-i','--in_dir',
         type=str,
-        default=None, 
+        default=None,
         required = True,
         help='Directory to `READS` and `QUERY` fasta files.'
     )
-    
+
     parser.add_argument(
         '-o','--out_dir',
         type=str,
-        default=None, 
+        default=None,
         required = True,
         help='Directory to direct output to.'
     )
-    
+
     parser.add_argument(
         '-k',
         type=int,
-        default=None, 
+        default=None,
         required = True,
         help='Kmer sequence size.'
     )
-    
+
     parser.add_argument(
         '-adj', '--save_adjacency',
         action='store_true',
-        default=False, 
+        default=False,
         required = False,
         help='Save Kmer adjacency matrix to `out_dir`.'
     )
-    
+
     parser.add_argument(
         '-t', '--filter_threshold',
         type = int,
-        default=1, 
+        default=1,
         required = False,
         help='Filter out kmers with frequency below this value.'
     )
-    
+
     return parser.parse_args()
 
-def main(): 
-    
+def main():
+
+    #\\\\
+    #\\\\
+    # ––– Parse Args
+    #\\\\
+    #\\\\
     args = parse_args()
     k = args.k
     thresh = args.filter_threshold
@@ -71,8 +78,13 @@ def main():
     in_dir = Path(args.in_dir)
     out_dir = Path(args.out_dir)
     out_dir.mkdir(exist_ok=True)
-    
-    # load data
+
+
+    #\\\\
+    #\\\\
+    # ––– Load Data
+    #\\\\
+    #\\\\
     fastas = load_data(in_dir)
     READS , QUERY = fastas['READS'], fastas['QUERY']
 
@@ -85,49 +97,87 @@ def main():
     print("***Reads Summary***")
     pprint(seq_summary(sequences))
 
-    # count kmers
+    #\\\\
+    #\\\\
+    # ––– Count Kmers
+    #\\\\
+    #\\\\
     print("\tsegmenting reads and counting kmers...")
     counter, kmer_mapping = segment_all(sequences, k)
     print(f"\t\t{counter.__len__():,} unique {k}-mers from {len(sequences):,} total reads")
+
+    # whr = np.argwhere([x.find("ort")!=-1  for x in counter.keys()]).ravel()
+    # np.array([x for x in counter.keys()] )[whr]
     
-    # filter for frequent reads
+    #\\\\
+    #\\\\
+    # ––– Filter for frequent reads
+    #\\\\
+    #\\\\
     print(f"\tfiltering for kmer frequency > {thresh}...")
     counter = Counter({k: v for k, v in counter.items() if v > thresh})
     kmer_mapping = {kmer:value for kmer,value in kmer_mapping.items() if kmer in counter}
     print(f"\t\t{counter.__len__():,} unique {k}-mers after filtering")
-    
+
     if counter.__len__() == 0:
         raise ValueError(f"\n\tNo unique {k}-mers with frequency > {thresh}")
-    
 
-    # make adjacency matrix between each kmer
-    print("\tmaking adjacency matrix...")
+    #\\\\
+    #\\\\
+    # ––– Make edge list
+    #\\\\
+    #\\\\
+    print("\tmaking edge list and finding contigs...")
     t0 = time.time()
-    adj = make_adj(counter)
+    left_contigs, right_contigs, edge_list = make_contigs(kmer_mapping, query, k,max_visits = 2)
     t1 = time.time()
     dt =(t1 - t0)
     print(f"\t\t{dt:.0f} s")
-    
+
     if save_adj:
-        print("\tSaving adjacency...")
-        adj.to_csv(out_dir/ "adjacency.csv", index=True)
+        print("\tSaving edge list...")
+        pkl.dump(edge_list, open(out_dir/ "edge_list.pkl",'wb'))
 
-    # Find Contigs
-    print("Finding contigs...")
-    # print("\tFor > 2000 kmers, this can take a while") if counter.__len__() > 2000 else print("\tThis should not take too long.")
-    t0 = time.time()
-    contigs_res = make_contigs_from_adj(query = query, adj = adj)
-    contigs = [contig for contig, _ in contigs_res]
-    # which Kmers constructed contig
-    contig_inds = [inds for _, inds in contigs_res] # each element contains the indices of the kmers used to create the contig in order
-    t1 = time.time()
-    dt =(t1 - t0)
-    num_contigs = len(contig_inds)
-    print(f"\tDone. {dt:.3f}s {num_contigs} contigs found\nE.g:")
-    print_contigs_with_context(contigs[:min(5,num_contigs)], query, context=10)
+    all_contigs = left_contigs + right_contigs # list of lists of kmers that make up each contig
 
-    #++ ALLELES.fasta -> largest contig (allele) containing query
+    # combnine each contig list to one string, append query at correct end/beginning for left/right contigs
+    left_joined_contigs = [
+      "".join(y if i == 0 else y[-1] for i, y in enumerate(x)) + query[k-1:]
+      for x in left_contigs
+    ]
+    right_joined_contigs = [
+      query[:-k+1] + "".join(y if i == 0 else y[-1] for i, y in enumerate(x))
+      for x in right_contigs
+    ]
+    all_joined_contigs = left_joined_contigs + right_joined_contigs
+
+    n = 5  # top N from each side
+    top_left = np.argpartition([len(x) for x in left_joined_contigs], -min(n, len(left_joined_contigs)))[-n:]
+    top_right = np.argpartition([len(x) for x in right_joined_contigs], -min(n,len(right_joined_contigs)))[-n:]
+
+    full_contigs = [
+        left_joined_contigs[li][:-len(query)] + right_joined_contigs[ri]
+        for li in top_left for ri in top_right
+    ]
+
+    largest_contigs = {f"contig{i}": x for i,x in enumerate(full_contigs)}
     
+    largest_contig = largest_contigs.get("contig0")
+    print_contig_with_context( largest_contig, query, context = 1000)
+
+    # overwrite with just the largest
+    largest_contigs = {'contig0': largest_contig}
+
+    #\\\\
+    #\\\\
+    #\\\\
+    #\\\\
+    # ––– Make Outputs
+    #\\\\
+    #\\\\
+    #\\\\
+    #\\\\
+    #++ ALLELES.fasta -> largest contig (allele) containing query
     #++ ALLELES.aln -> read, contig_id, location
     #++ ALLELES.tsv
     #++ - sseqid: read id from READS.fasta
@@ -138,65 +188,90 @@ def main():
     #++ - qend: end of where contig aligns with sseq (the largest matched contig)
     #---> x, y, how x aligns with y, how y aligns with x
 
-    
-    #++ kmer_mapping ==> { 'kmer': [(read_index, (coordinates)), (other_read_index, (coordinates)),...], 'other_kmer':...
-    # Kmer: the reads containing it and their coordinates in the read
-    kmer_seq_coords = [coords  for x in kmer_mapping.values() for ind, coords in x] 
-    kmer_read_ids = [ind  for x in kmer_mapping.values() for ind, coords in x ] # tuple of read indices for each kmer
-    # Kmer: teh read IDs that contain it
-    kmer_seq_ids = [headers[i] for i in kmer_read_ids ]
-    
-    kmers = []
-    for key, values in kmer_mapping.items():
-        kmers+= [key] * len(values)
+    #\\\\
+    #\\\\
+    # ––– ALLELES.fasta
+    #\\\\
+    #\\\\
+    with open(out_dir / "ALLELES.fasta", "w") as f:
+        for key,val in largest_contigs.items():
+            f.write(f">{key}\n")
+            f.write(val + "\n")
 
-    SystemExit("Fix the q/s start/end")
+        
+        
+        
+    #\\\\
+    #\\\\
+    # ––– ALLELES.aln
+    #\\\\
+    #\\\\
+    #+ map reads to contigs
+    #++ first: map contig kmers to contig
+    #++ second: look up read kmer in contig_kmer_mapping
+    #++ third: convert kmer loc in contig to contig overlap with read rooted at kmer
+    
+    rows = []
+    # contig_id = 'contig0'; contig = largest_contigs.get(contig_id) ; header = headers[0]; read = sequences[0]
+    for contig_id, contig in largest_contigs.items():
+        # build kmer: [positions in this contig] once per contig
+        contig_kmer_pos = {}
+        for i in range(len(contig) - k + 1): # for each k-length mer
+            kmer = contig[i:i+k]
+            if kmer not in contig_kmer_pos:
+                contig_kmer_pos[kmer] = []
+            contig_kmer_pos[kmer].append(i)
 
-    # where read in contig 
-    qstart = [pos * k for inds in contig_inds for pos in range(len(inds))]
-    qend   = [pos * k + k for inds in contig_inds for pos in range(len(inds))]
-    
-    # kmer x read table (from kmer_mapping) 
-    kmer_read_df = pd.DataFrame({
-        'kmer_ind': [i for i, vals in enumerate(kmer_mapping.values()) for _ in vals],
-        'kmer':  [key for key, vals in kmer_mapping.items() for _ in vals],
-        'seqid': [headers[ind] for vals in kmer_mapping.values() for ind, _ in vals],
-        'sstart':[s for vals in kmer_mapping.values() for _, (s, e) in vals],
-        'send':  [e for vals in kmer_mapping.values() for _, (s, e) in vals],
-    })
+        for header, read in zip(headers, sequences):
+            offsets = []
+            for j in range(len(read) - k + 1):
+                kmer = read[j:j+k]
+                if kmer in contig_kmer_pos:
+                    for contig_i in contig_kmer_pos[kmer]:
+                        offsets.append(contig_i - j)
+            if not offsets:
+                continue
+            offset = Counter(offsets).most_common(1)[0][0]
+            qstart = max(0, offset)
+            qend   = min(len(contig), offset + len(read))
+            sstart = qstart - offset
+            send   = sstart + (qend - qstart)
+            if read[sstart:send]  != contig[qstart:qend]: # stop if alignment not right
+                continue
+            rows.append({
+                "sseqid": header.removeprefix('>'),
+                "qseqid": contig_id,
+                "sstart": sstart,
+                "send":   send,
+                "qstart": qstart,
+                "qend":   qend,
+            })
 
-    # kmer x contig table (from contig_inds) 
-    kmer_contig_df = pd.DataFrame({
-        'kmer_ind':   [ind for inds in contig_inds for ind in inds],
-        'qseqid':  [i   for i, inds in enumerate(contig_inds) for _ in inds],
-        'qstart':qstart ,
-        'qend':  qend    
-    })
+    alleles_aln = pd.DataFrame(rows).drop_duplicates(subset=["sseqid", "qseqid"])
+    alleles_aln = alleles_aln.reset_index(drop=True)  # after drop_duplicates
+    
+    def check_alleles_aln(alleles_aln):
+        """Check that sseq at start/end == qseq at start/end for all matches"""
+        res = []
+        for i in range(alleles_aln.shape[0]):
+            row = alleles_aln.iloc[i]
+            read_sub   = sequences[headers.index(f">{row['sseqid']}")][row['sstart']: row['send']]
+            contig_sub = largest_contigs.get(row['qseqid'])[row['qstart']: row['qend']]
+            res.append(read_sub == contig_sub)
 
-    # Write Data
-    with open(out_dir / "ALLELES.fasta", 'wt') as f:
-        for i,c in enumerate(contigs):
-            f.write(f">{i}_contig\n{c}\n")
-            
-    # join and save
-    (
-        kmer_contig_df
-        .merge(kmer_read_df, left_on='kmer_ind', right_index=True)
-        .to_csv(out_dir/"ALLELES.tsv", sep = "\t", index = False)
-    )
+        if np.sum(~np.array(res)):
+            raise ValueError("alleles_aln has some incorrect alignment.")
+
+    check_alleles_aln(alleles_aln)
     
-    (
-        kmer_read_df
-        .merge(kmer_contig_df, on='kmer_ind')
-        .drop(columns='kmer_ind')
-        .to_csv(out_dir/"ALLELES.aln", sep = "\t", index = False)
-    )
     
-    len(kmers)
-    np.array(kmers)[contig_inds[0]]
-    
+    #\\\\
+    #\\\\
+    # ––– SAVE RESULTS
+    #\\\\
+    #\\\\
     print("Saving...")
-    
+    alleles_aln.to_csv(out_dir / "ALLELES.tsv", sep="\t", index=False)
     print("Done")
 
 
