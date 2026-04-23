@@ -78,3 +78,4 @@ rsync -a --progress --ignore-times /Users/canderson/Documents/school/res-meth-cl
 #align(bottom, outline())
 #pagebreak()
 
+= 
