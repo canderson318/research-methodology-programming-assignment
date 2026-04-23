@@ -3,7 +3,7 @@ import pytest
 import sys
 from pathlib import Path
 import os
-os.chdir("/Users/canderson/Documents/school/res-meth-class/programming-assignment/versions/version004")
+os.chdir(Path(__file__).parent.parent.parent)  # versions/version004/
 from src.functions import *
 
 def test_align_true():
