@@ -52,8 +52,13 @@ open deliverables/module-3/presentation/main.pdf
 
 #title-slide[Overview]
 
+
 #slide( outlined: false)[
   #framed(title: "Problem")["Create a program that takes as input the set of all next-generation sequencing reads identified in a sample and an initial query sequence and returns the largest sequence contig that can be constructed from the reads that contains the initial query sequence."]
+]
+
+#slide(title:"Biological Relevance", outlined: false)[
+  #lorem(200)
 ]
 
 #slide( outlined: false)[
@@ -156,146 +161,15 @@ open deliverables/module-3/presentation/main.pdf
 
 
 // #title-slide[Technical Approach]
-#title-slide[Development Plan]
+#title-slide[Algorithm Outline]
 
-#slide(title:"Timeline")[
-  #align(center)[#image("images/dev-flowchart.svg")]
-]
-
-
-#slide(title:"Process reads", outlined:true)[
-  #set text(size:.8em)
-  - Make k-length strings (kmers) from reads.
-  - Record kmer frequencies.
-  - Filter out infrequent kmers below some threshold $tau$.
-  - Filter for unique kmers.
-  - Return list of unique kmers $S$.
+#slide(title:"", outlined:false)[
+  - build graph from left and right of query kmer core graph
+  - create left/right contig along the way 
+  - construct full contig by selecting longest right + longest left contigs with query in the middle
+  - 
 
 ]
-
-
-#slide(title:"Compare Kmers", outlined:true)[
-  
-  #set text(size:.8em)
-  - Test how each kmer aligns with every other.
-  - Return an adjacency matrix where a value of _1_ means the kmer at the row index matches the string of the column index.
-]
-
-
-#slide(title: "Create Contiguous Sequences", outlined:true)[
-  #set text(size: .8em)
-  #grid(columns: (1fr, 1fr),rows: (auto, 3fr,auto),gutter: .2em,
-
-    [#grid.cell(colspan: 2)[
-      - Concatenate every possible combination of adjacent strings.
-      - Return a list of contiguous sequences _contigs_
-      #pad(left: 1.5em, bottom: 1em)[#emph[for every string find the next closest strings and for each of these append it to the end of the previous]]
-    ]],
-
-    [#align(center + top)[#figure(image("images/crpd-graph.pdf", height: 77%, fit: "contain"),caption: [A graph of the 5-length kmers from the first sentence of _The Hobbit_.])]],
-
-    [#align(center + top)[#figure(image("images/crpd-line-graph.pdf", height: 77%, fit: "contain"),caption: [A graph of the 9-length kmers from the first sentence of _The Hobbit_.])]],
-
-    [#grid.cell(colspan:2)[#align(center+bottom)[#text(blue)[5-letter versus 9-letter kmers]]]]
-  )
-]
-
-
-#slide(title:"Create Contiguous Sequences", outlined:true)[
-  #grid(columns:(1.3fr , 1fr),rows:(300pt), gutter:.2em, 
-    [
-      #set align(left); #set text(size:.5em)
-        // #figure(
-        #image("images/stones.jpg", height: 200pt)
-        // , caption:[Stones scattered in a river.])//@river_stones
-    ],
-    [
-      #set align(right); #set text(size:.5em)
-      // #figure(
-      #pad(right:5em)[
-        #image("images/single-path-stones.jpg", height: 200pt)
-      // , caption:[Stones in a river arranged in a line.])//@river_footpath
-      ]
-    ])
-]
-
-
-#slide(title: "Create Contiguous Sequences, cont.")[
-  #set align(top+left)
-  #set text(size:.55em,)
-]
-
-
-#slide(title:"Query Contigs", outlined:true)[
-  #set text(size:.8em)
-  - Find the longest sequence contig that contains a query sequence.
-]
-
-
-#let highlight(txt, query, color: blue) = {
-  let parts = txt.split(query)
-
-  if parts.len() == 1 {
-    txt
-  } else {
-    let out = ()
-    for i in range(parts.len()) {
-      out.push(parts.at(i))
-      if i < parts.len() - 1 {
-        out.push(text(fill: color)[#query])
-      }
-    }
-    out.join()
-  }
-}
-
-#slide(title:"Example Results", outlined:true)[
-  #let q= "dirtywetholefilledwiththeendsofwormsandanoozysmell"
-  #set align(top)
-  *Query:* #text(blue)[#q]\ \
-  *Longest contigs with query sequence:*
-  
-  #let contigs = (
-    "inaholeinthegroundtherelivedahobbitnotanastydirtywetholefilledwiththeendsofwormsandanoozysmellnoryetadrybaresand",
-    "inaholeinthegroundtherelivedahobbitnotanastydirtywetholefilledwiththeendsofwormsandanoozysmellnoryetadrybaresandyhole",
-    "inaholeinthegroundtherelivedahobbitnotanastydirtywetholefilledwiththeendsofwormsandanoozysmellnoryetadrybaresandyhole",
-    "inaholeinthegroundtherelivedahobbitnotanastydirtywetholefilledwiththeendsofwormsandanoozysmellnoryetadrybaresandyholewith",
-    "inaholeinthegroundtherelivedahobbitnotanastydirtywetholefilledwiththeendsofwormsandanoozysmellnoryetadrybaresandyholewithnothinginittositdownonortoeatitwasahob",
-    "inaholeinthegroundtherelivedahobbitnotanastydirtywetholefilledwiththeendsofwormsandanoozysmellnoryetadrybaresandyholeandth",
-    "inaholeinthegroundtherelivedahobbitnotanastydirtywetholefilledwiththeendsofwormsandanoozysmellnoryetadrybaresandyholeandthatmeanscomfort",
-    "inaholewithnothinginittositdownonortoeatitwasahobbitnotanastydirtywetholefilledwiththeendsofwormsandanoozysmellnoryetadrybaresand",
-    "inaholewithnothinginittositdownonortoeatitwasahobbitnotanastydirtywetholefilledwiththeendsofwormsandanoozysmellnoryetadrybaresandyholeinthegroundtherelivedahob",
-    "inaholewithnothinginittositdownonortoeatitwasahobbitnotanastydirtywetholefilledwiththeendsofwormsandanoozysmellnoryetadrybaresandyholeinthegroundthatmeanscomfort",
-    "inaholewithnothinginittositdownonortoeatitwasahobbitnotanastydirtywetholefilledwiththeendsofwormsandanoozysmellnoryetadrybaresandyhole",
-    "inaholewithnothinginittositdownonortoeatitwasahobbitnotanastydirtywetholefilledwiththeendsofwormsandanoozysmellnoryetadrybaresandyhole",
-    "inaholewithnothinginittositdownonortoeatitwasahobbitnotanastydirtywetholefilledwiththeendsofwormsandanoozysmellnoryetadrybaresandyholeandtherelivedahob",
-    "inaholewithnothinginittositdownonortoeatitwasahobbitnotanastydirtywetholefilledwiththeendsofwormsandanoozysmellnoryetadrybaresandyholeandthatmeanscomfort",
-    "inaholeandtherelivedahobbitnotanastydirtywetholefilledwiththeendsofwormsandanoozysmellnoryetadrybaresand",
-    "inaholeandtherelivedahobbitnotanastydirtywetholefilledwiththeendsofwormsandanoozysmellnoryetadrybaresandyholeinthegroundth",
-    "inaholeandtherelivedahobbitnotanastydirtywetholefilledwiththeendsofwormsandanoozysmellnoryetadrybaresandyholeinthegroundthatmeanscomfort",
-    "inaholeandtherelivedahobbitnotanastydirtywetholefilledwiththeendsofwormsandanoozysmellnoryetadrybaresandyhole",
-    "inaholeandtherelivedahobbitnotanastydirtywetholefilledwiththeendsofwormsandanoozysmellnoryetadrybaresandyholewith",
-    "inaholeandtherelivedahobbitnotanastydirtywetholefilledwiththeendsofwormsandanoozysmellnoryetadrybaresandyholewithnothinginittositdownonortoeatitwasahob",
-    "inaholeandtherelivedahobbitnotanastydirtywetholefilledwiththeendsofwormsandanoozysmellnoryetadrybaresandyhole"
-  )
-
-  #pad(left:1em)[#text(.45em)[
-    #for c in contigs {
-      highlight(c, q)
-      linebreak()
-    }
-  ]
-
-]]
-
-// #title-slide[Testing]
-
-#slide(title:"Testing", outlined:true)[
-  #set align(horizon+center)
-  #image("images/test-flowchart.svg", width: 110%)
-]
-
-
 
 // // // // // // // 
 // // // // // // // 
