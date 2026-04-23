@@ -9,7 +9,7 @@ __Spring 2026__ -->
 This repo contains code that finds the longest contiguous sequence that contains a query sequence from a query sequence and fasta format file of next-gen sequencing reads.
 
 *__Find the assignment description [here](assignment.md).__*
-*__Find the assignment report [here](deliverables/module-2/report/main.pdf).__*
+*__Find the assignment report [here](deliverables/module-3/report/main.pdf).__*
 
 ### Motivation
 There are many applications wherein a researcher would like to know the sequence context around a given query sequence they suspect exists in their sample. For example, gene targeting may be used to create a knock-out model and the researcher would like to verify that the target vector was incorporated into the right place in the genome. Alternatively, a researcher might wish to fully identify suspected contaminating sequences that would indicate the presence and/or source of unclean sample handling procedures in the laboratory, such as a specific PCR primer contamination.
@@ -65,10 +65,9 @@ _Note: higher values of `k` result in more unique k-mers and greater specificity
 Running `python -m src.main` creates three files in `out_dir`:
 
 - `ALLELES.fasta` — fasta file of the top assembled contigs containing the query
-- `ALLELES.tsv` — tab-separated alignment table (see columns below)
-- `ALLELES.aln` — same as `ALLELES.tsv` in tab-delimited format
+- `ALLELES.aln` — tab-separated alignment table (see columns below)
 
-`ALLELES.tsv` / `ALLELES.aln` columns:
+`ALLELES.aln` columns:
 
 | Column | Description |
 |---|---|
