@@ -6,4 +6,5 @@ ALLELES*
 READS*
 *.pdf
 !**/main.pdf
-*.vscode/
+**.vscode/
+*.DS_Store
