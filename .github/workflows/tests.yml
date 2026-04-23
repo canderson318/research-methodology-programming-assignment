@@ -1,0 +1,14 @@
+name: tests                                                                                              
+  on: [push, pull_request]                                                                                 
+  jobs:
+    test:
+      runs-on: ubuntu-latest
+      steps:                
+        - uses: actions/checkout@v4
+        - uses: conda-incubator/setup-miniconda@v3                                                         
+          with:                                   
+            environment-file: environment.yaml                                                             
+            activate-environment: res-meth    
+        - name: run tests
+          shell: bash -el {0}                                                                              
+          run: python -m pytest src/tests/test_functions.py -v
