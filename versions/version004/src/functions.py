@@ -114,7 +114,11 @@ def make_contigs(kmer_mapping: Dict, query: str, k: int, max_visits: int = 2):
     first, last = query_keys[0], query_keys[-1]
 
     def _connect(kmer: str, candidates: list, mapping_dict: Dict):
-        """(prev_tuple|None, next_tuple|None, indices)"""
+        """
+        for kmer, find the predecessor and successor from a list of candidates. 
+        add the read provenance from mapping_dict too
+        Returns: (prev_tuple|None, next_tuple|None, indices)
+        """
         if kmer not in candidates:
             return (None, None, mapping_dict.get(kmer, 0))
         whr_kmer = candidates.index(kmer)
@@ -140,8 +144,10 @@ def make_contigs(kmer_mapping: Dict, query: str, k: int, max_visits: int = 2):
     # visited is a count dict — stop a branch when any node hits max_visits
     to_explore = [(p, [p], {p: 1}) for p in (edge_list[first][0] or [])]
     left_contigs = []
+    visited_full = {}
     while to_explore:
         curr, contig, visited = to_explore.pop()
+        visited_full = {**visited_full, **visited}
         if curr not in edge_list:
             edge_list[curr] = _connect(curr, keys, kmer_mapping)
         preds = edge_list[curr][0]
@@ -151,7 +157,7 @@ def make_contigs(kmer_mapping: Dict, query: str, k: int, max_visits: int = 2):
         for p in preds:
             count = visited.get(p, 0)
             if count >= max_visits:
-                left_contigs.append(contig)  # cycle ->> save and stop branch
+                left_contigs.append(contig)  # cycle ->> save and stop branch # unless next is unvisited
             else:
                 to_explore.append((p, [p] + contig, {**visited, p: count + 1}))
 
