@@ -138,7 +138,7 @@ def main():
         print("\tSaving edge list...")
         pkl.dump(edge_list, open(out_dir/ "edge_list.pkl",'wb'))
 
-    all_contigs = left_contigs + right_contigs # list of lists of kmers that make up each contig
+    # all_contigs = left_contigs + right_contigs # list of lists of kmers that make up each contig
 
     # combnine each contig list to one string, append query at correct end/beginning for left/right contigs
     left_joined_contigs = [
@@ -149,7 +149,8 @@ def main():
       query[:-k+1] + "".join(y if i == 0 else y[-1] for i, y in enumerate(x))
       for x in right_contigs
     ]
-    all_joined_contigs = left_joined_contigs + right_joined_contigs
+    
+    # all_joined_contigs = left_joined_contigs + right_joined_contigs
 
     n = 5  # top N from each side
     top_left = np.argpartition([len(x) for x in left_joined_contigs], -min(n, len(left_joined_contigs)))[-n:]

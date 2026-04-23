@@ -54,7 +54,13 @@ def parse(l:list) -> tuple:
 
 def segment(s, t)-> Dict[str, Tuple[int,int]]:
     """Get all t-length strings and their locations in string"""
-    return {s[i:i+t]: (i,i+t) for i in range(len(s)-t+1)}
+    result = {}                                                                                      
+    for i in range(len(s) - t + 1):                                                                    
+        kmer = s[i:i+t]
+        if kmer not in result:                                                                         
+            result[kmer] = []
+        result[kmer].append((i, i+t))                                                                  
+    return result
 
 def segment_all(sequences: list[str], t: int) -> Tuple[Counter, Dict[str, List[int]]]:
     """Segment all sequences and count tmers collectively; save read index for each tmer"""

@@ -40,6 +40,11 @@ sp.run([
 #\\\\
 #\\\\
 
+fastas = load_data(in_dir)
+QUERY = fastas['QUERY']
+_ , query = parse(QUERY) 
+query = query[0] 
+
 q_contigs = np.loadtxt(out_dir/"ALLELES.fasta", dtype=str)
 q_contigs = q_contigs[np.arange(len(q_contigs))%2 !=0] # contigs are odd items
 print_contigs_with_context(q_contigs[:10], query, context=100)
