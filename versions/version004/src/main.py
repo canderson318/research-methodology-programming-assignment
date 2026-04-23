@@ -5,14 +5,17 @@ from pathlib import Path
 import time
 import pickle as pkl
 from pprint import pprint
-
-# Add src directory to path
-sys.path.insert(0, str(Path(__file__).parent))
 import argparse
-try:
-    from functions import *
-except:
-    raise ModuleNotFoundError
+import os 
+
+os.chdir(Path(__file__).parent.parent.parent)  # versions/version004/
+from src.functions import *
+
+# sys.path.insert(0, str(Path(__file__).parent))
+# try:
+#     from functions import *
+# except:
+#     raise ModuleNotFoundError
 
 def parse_args():
     parser = argparse.ArgumentParser(
