@@ -103,8 +103,7 @@ def make_contigs(kmer_mapping: Dict, query: str, k: int, max_visits: int = 2):
 
     max_visits: how many times a single path may traverse the same k-mer before
                 stopping. 1 = classic visited-set behaviour. 2+ = allows passing
-                through repeated k-mers (e.g. 'hole' in hobbit text) up to that
-                many times before declaring a cycle.
+                through repeated k-mers up to that many times before cycling out.
 
     Returns: left_contigs, right_contigs, edge_list
     """

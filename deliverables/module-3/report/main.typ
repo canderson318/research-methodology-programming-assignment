@@ -14,6 +14,7 @@ rsync -a --progress --ignore-times /Users/canderson/Documents/school/res-meth-cl
 #set page(margin: 1in, width: 8.5in, height: 11in, numbering: "1")
 #let fntsz = 10pt
 #let after = fntsz * 1.5
+#let purp = rgb("#5b35e784")
 #set text(font: "Georgia", size: fntsz)
 #set par(leading: fntsz, spacing: after)
 #set heading(numbering: "1.")
@@ -63,6 +64,8 @@ rsync -a --progress --ignore-times /Users/canderson/Documents/school/res-meth-cl
     it.caption
 }
 
+#set heading(numbering:none)
+
 
 //////////////////////
 //////////////////////
@@ -78,4 +81,68 @@ rsync -a --progress --ignore-times /Users/canderson/Documents/school/res-meth-cl
 #align(bottom, outline())
 #pagebreak()
 
-= 
+
+= Introduction
+// - assigned problem
+// - Overview of sequencing
+//     - why reads in the first place
+//     - why use query
+//         - If only interested in specific region, you can just align around that 
+// - Computational translation
+// == Biological Relevance
+// - importance of high-fidelity genome assembly in the study of diseases
+// - example disease
+// - gaps in the field
+
+
+Sequencing a genome is not straightforward. Due to the limitations of our technology and a genome's sheer size, the best sequencing technologies still need fragments. Genomes can be billions of base pairs long, but sequencing machines can only read hundreds to thousands at a time, so the genome must first be shattered into millions of small fragments and then sequenced independently. These short sequences, or reads, are then computationally reassembled. The first technologies, including Sanger sequencing, were tedious and time consuming; while accurate, Sanger could only produce \~1,000 bp reads and required manual processing. Next-generation platforms like Illumina parallelized the process massively, reducing cost and time by orders of magnitude. Short reads are highly accurate but struggle with repetitive regions, introducing a new trade-off. Long-read platforms like PacBio and Oxford Nanopore are able to span these regions but tend to trade accuracy for length, favoring completeness over correctness.
+
+Sequencing does not reconstruct the original sequence. The outputs of these technologies are fragments, including many duplicates, which must be reconstructed into the original sequence. This can be done using a reference genome which acts as a template, or it can be done _de novo_, using only the fragments' overlap with each other to map them back together. A recent example of this was during the COVID-19 pandemic when there was no reference genome to use in vaccine development. Researchers sequenced the \~30 kb Sars-Cov-2 genome, enabling vaccine design. There are also many applications where a researcher may have the sequence from a region of interest and only cares about the region surrounding it, for example when validating a knock-out model or identifying contamination in the samples' sequences.
+
+In this scenario an algorithm would need to identify the largest contiguous containing a query of interest from the set of next-generation reads sequenced using the aforementioned technologies. This is the scenario this report explores.
+
+== Overview of Current Methodologies
+// - De Brujin graphs
+//     - k-1 overlap
+// - overlap layout consensus
+// - DFS/BFS
+Read alignment boils down to two approaches, overlap layout consensus (OLC) and De Brujin graphs (DBG). OLC looks at the raw sequencing reads and finds how each one overlaps with every other one. This can result in accurate contiguous sequences (contigs) as the reads are not processed prior to alignment, but the number of comparisons between each read makes this method computationally inefficient, solvable in $O(N^2)$ time. The DBG approach is more efficient ($O(N)$) but less accurate and are more prone to repetitive regions and duplication. This approach uses kmer fragments from each read to compare overlap where the first $k-1$ letters of one kmer is compared to the last $k-1$ of another. Similar to OLC, DBG construction compares string overlap between each kmer, but because each fragment is the same length, one-to-one comparison is possible. The result is a graph where each node is a kmer and edges indicate directionaly overlap between nodes. 
+In both scenarios, the original sequence (or fragment containing the query) is constructed by traversing the graph, connecting each read/kmer along the way. Unguided, the only way to do this would be to brute-force traverse every possible path, but since we have a query, we only care about paths spanning out from our query of interest. This means that a comparatively few connections need to be explored. 
+The next step of _exploring_ out from the query sequence (which is essentially a cloud of kmers which originated from the query) can proceed in one of two ways. The first is depth-first search (DFS) which explores one path at a time until it terminates, recording but ignoring branching paths as it explores. The other is breadth-first search (BFS) which does the opposite – this method explores every path one step at a time, building many contiguous sequences in parallel. The DFS is often preferred over BFS as it does not require every path to be stored in memory.
+
+= My Approach
+// - stack loop 
+// - recording visited and nexts
+In my approach, I use depth-first search, De Brujin graph exploration where I iteratively explore paths one at a time, storing the current _state_ in a list containing the current node, the current growing contig, and the nodes visited up to that point (unique to that contig). While my algorithm passes through these states, it also records the predecessor nodes, successor nodes, and kmer-to-read mapping (read id and region with in the read). 
+In early iterations I filled a directed adjacency matrix where a non-zero cell at position [i, j] represented a directed edge from kmer_i to kmer_j, meaning the last k−1 characters of kmer_i match the first k−1 characters of kmer_j. For example, "fooba" $arrow$ "oobar" would be recorded as a non-zero entry at [i, j] where i is the index of "fooba" and j is the index of "oobar".
+Building the adjacency matrix naturally used considerable memory and required more time to manipulate and query. 
+I also tried using a recursive approach where the 'explore next' functionality was a recursive function which recursively passed the current node, contig, and visited nodes. It was elegant, but very difficult to debug, so I settled on the listed state approach. 
+My algorithm also builds on the previous iteration by short-cutting graph traversal by starting at the query sequence. I think this was the improvement had the most impact on this algorithm's overall performance.
+
+The algorithm first identifies the region to explore out from. This consists of the kmers created by the query. Next, the algorithm separately explores both left and right from the contig where each time the contig grows larger in its respective direction. 
+
+#align(center,rect(fill: purp, radius: 5pt)[inaholeinthegroundtherelivedahobbit])
+
+Taking the above sentence as an example genome with the query 'ground', the algorithm would first find the kmers that compose the query. Using a $k$ of 3 these would be gro, rou, oun, and und. 
+
+Starting with the rightmost kmer of the core cloud, "und", the algorithm then searches for kmers whose first $k-1$ characters match the last $k-1$ characters of "und", i.e. any kmer starting with "nd". In this genome that yields "ndt", which becomes the next node. The algorithm continues: "ndt" $arrow$ "dth" $arrow$ "the" $arrow$ "her" $arrow$ "ere", extending the right contig one character at a time until no successor exists.
+Simultaneously, starting from the leftmost query kmer "gro", the algorithm searches in the opposite direction — looking for kmers whose last $k-1$ characters match the first $k-1$ characters of "gro", i.e. any kmer ending in "gr". That yields "egr", then "heg" $arrow$ "the" $arrow$ "nth" $arrow$ "int" $arrow$ "ein" $arrow$..., extending the left contig backward toward the beginning of the genome. The two contigs are then joined around the query to reconstruct the full sequence: ...einthe#text(stroke: purp)[ground]there...
+
+
+== Considerations and Limitations
+- k 
+    - odd or even so no palindromes
+- filtering threshold t
+- max visits threshold
+- bias due to noise
+
+== Results
+=== Tests
+- descriptions of tests and their outputs
+=== Real Sequence
+- link to GH result
+= Conclusions 
+- read alignment is hard
+- much more difficult than just connecting the dots
+= Future Work 
+- Alternative Approaches

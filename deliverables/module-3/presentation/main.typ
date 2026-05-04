@@ -58,7 +58,7 @@ open deliverables/module-3/presentation/main.pdf
 ]
 
 #slide(title:"Biological Relevance", outlined: false)[
-  #lorem(200)
+  #lorem(100)
 ]
 
 #slide( outlined: false)[
