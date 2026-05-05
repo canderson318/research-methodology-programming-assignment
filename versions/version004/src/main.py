@@ -7,9 +7,10 @@ import pickle as pkl
 from pprint import pprint
 import argparse
 import os 
+os.chdir("/Users/canderson/Documents/school/res-meth-class/programming-assignment/versions/version004")
+# os.chdir(Path(__file__).parent.parent.parent)  # versions/version004/
+from functions import *
 
-os.chdir(Path(__file__).parent.parent.parent)  # versions/version004/
-from src.functions import *
 
 # sys.path.insert(0, str(Path(__file__).parent))
 # try:
@@ -99,7 +100,7 @@ def main():
 
     print("***Reads Summary***")
     pprint(seq_summary(sequences))
-
+    
     #\\\\
     #\\\\
     # ––– Count Kmers

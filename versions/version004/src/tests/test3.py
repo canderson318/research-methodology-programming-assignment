@@ -22,11 +22,17 @@ in_dir.mkdir(exist_ok=True)
 #\\\\
 from src.simulate_reads import sim_reads
 
+# sim_reads(count = 1000, 
+#           len_range_lwr=25, 
+#           len_range_upr = 40, 
+#           seed = 100, 
+#           seq_len= 300,
+#           out_dir = str(in_dir))
 sim_reads(count = 1000, 
-          len_range_lwr=25, 
-          len_range_upr = 40, 
+          len_range_lwr=200, 
+          len_range_upr = 300, 
           seed = 100, 
-          seq_len= 300,
+          seq_len= 1000,
           out_dir = str(in_dir))
 
 fastas = load_data(in_dir)
@@ -37,6 +43,21 @@ _ , query = parse(QUERY) # len 1 list of single query
 query = query[0] # str query
 headers, sequences = parse(READS) # two lists
 
+
+res = []
+Ks = np.array(range(1,310,2))
+for k in Ks:
+    res.append(len(segment_all(sequences, k)[0]))
+
+_,ax = plt.subplots(figsize= (8,5))
+# ax.bar(Ks,res, zorder = 1)
+ax.plot(Ks,res, zorder = 1)
+ax.scatter(Ks,res, s = 10, color ='blue', alpha = 1)
+ax.set_xlabel("K")
+ax.set_ylabel("Count")
+ax.set_title("Relationship between K and count of unique K-mers")
+plt.tight_layout()
+plt.savefig(out_dir/"k_count.pdf")
 
 #\\\\
 #\\\\

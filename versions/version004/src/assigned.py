@@ -21,8 +21,10 @@ in_dir.mkdir(exist_ok=True)
 #\\\\
 
 # k = 10 # odd for no palindrome
-k = 32 # or 33
+# k = 67 # or 33
+k = 19
 thresh = t = 3
+
 sp.run([
     './src/main.py',
     '--out_dir', out_dir,
@@ -30,7 +32,7 @@ sp.run([
     '-k', str(k),
     '--save_adjacency',
     '-t', str(t)
-], check = True)
+], capture_output = False, check = True)
 
 
 
@@ -41,21 +43,57 @@ sp.run([
 #\\\\
 
 fastas = load_data(in_dir)
+READS = fastas['READS']
 QUERY = fastas['QUERY']
-_ , query = parse(QUERY) 
-query = query[0] 
+_ , query = parse(QUERY)
+_ , sequences = parse(READS)
+query = query[0]
+
+if False:
+    res = []
+    Ks = np.array(range(1,300,2))
+    for k in Ks:
+        res.append(len(segment_all(sequences, k)[0]))
+    pkl.dump(res,open(out_dir/"k_count.pkl", 'wb'))
+else:
+    res = pkl.load(open(out_dir/"k_count.pkl", 'rb'))
+
+xvals = np.arange(Ks.min(), Ks.max(), 1)
+interpolated = np.interp(xvals, Ks, res)
+
+_,ax = plt.subplots(figsize= (8,5))
+ax.bar(xvals,interpolated.round(), zorder = 1, width = 1, alpha = .2, color = "#8043a3")
+ax.scatter(xvals,interpolated.round(), s = 2, color ='#5a0d87', alpha = 1)
+ax.set_xlabel("K")
+ax.set_ylabel("Count")
+ax.set_title("Relationship between K and count of unique K-mers")
+peak_x = xvals[np.argmax(interpolated)]
+peak_y = interpolated.max()
+y_frac = peak_y / ax.get_ylim()[1]
+ax.scatter(peak_x, peak_y, color='blue', marker='x')
+ax.axvline(x=peak_x, ymax=y_frac, color='blue', linestyle='--', linewidth=1)
+existing_ticks = [x for x in list(ax.get_xticks()) if x >= 0]
+ax.set_xticks(existing_ticks + [peak_x])
+tick_colors = ['black'] * len(existing_ticks) + ['blue']
+for tick, color in zip(ax.xaxis.get_ticklabels(), tick_colors):
+    tick.set_color(color)
+ax.set_xlim((0,None))
+plt.tight_layout()
+plt.savefig(out_dir/"k_count.pdf")
+
+
 
 q_contigs = np.loadtxt(out_dir/"ALLELES.fasta", dtype=str)
 q_contigs = q_contigs[np.arange(len(q_contigs))%2 !=0] # contigs are odd items
-print_contigs_with_context(q_contigs[:10], query, context=100)
+# print_contigs_with_context(q_contigs[:10], query, context=100)
 
 edge_list = pkl.load(open(out_dir/"edge_list.pkl", 'rb'))
 
 #\\\\
 # Plot Graph
 #\\\\
-edge_list = [(key,x) 
-             for key, val in edge_list.items() 
+edge_list = [(key,x)
+             for key, val in edge_list.items()
              if val[1] is not None
              for x in val[1]
              ]

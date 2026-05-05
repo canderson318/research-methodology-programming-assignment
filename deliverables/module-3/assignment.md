@@ -3,9 +3,7 @@
 ## Assignment
 - A well documented and organized GitHub repository. 
 - A complete written report. 
-- A short (max 10 minute) pre-recorded presentation that includes a clear and concise problem statement 
-and algorithm design description and results that is targeted at a general scientific audience. Figures 
-such as flow charts and schematics are encouraged. Technical jargon is discouraged. eted components
+- A short (max 10 minute) pre-recorded presentation that includes a clear and concise problem statement and algorithm design description and results that is targeted at a general scientific audience. Figures such as flow charts and schematics are encouraged. Technical jargon is discouraged. eted components
 
 ----
 
@@ -30,25 +28,10 @@ because it gives a common starting point.
 
  
 ### Pre-recorded presentations 
-For these assignments, imagine that you are giving a talk at the American Society of Human Genetics meeting, 
-or a similarly large conference with diverse attendees. Given the wide range of scientific backgrounds in your 
-audience, the vast majority of which are not method developers. You must clearly and convincingly motivate 
-the problem and your proposed solution without relying on jargon. Visual aids can effectively support your 
-argument, but they can also be a distraction. Consider every line in your visuals and every word in your 
-description and how they contribute to supporting your argument. If they can be removed without hurting the 
-argument, then do so. 
- 
-The exception is in module one where I ask you to give a development and testing plan. Treat this as a distinct 
-presentation where I am specifically asking for technical details. 
+For these assignments, imagine that you are giving a talk at the American Society of Human Genetics meeting, or a similarly large conference with diverse attendees. Given the wide range of scientific backgrounds in your audience, the vast majority of which are not method developers. You must clearly and convincingly motivate the problem and your proposed solution without relying on jargon. Visual aids can effectively support your argument, but they can also be a distraction. Consider every line in your visuals and every word in your description and how they contribute to supporting your argument. If they can be removed without hurting the argument, then do so. 
  
 ### Written report 
- The written report should describe and justify your strategy, define the input files, present the algorithm 
-overview, define any scoring methods, and detail the expected output files. The report should also contain an 
-analysis of the final results and discussion. You should cite the appropriate scientific literature where 
-appropriate. 
+The written report should describe and justify your strategy, define the input files, present the algorithm overview, define any scoring methods, and detail the expected output files. The report should also contain an analysis of the final results and discussion. You should cite the appropriate scientific literature where appropriate. 
  
 ### Testing 
-Testing is critical to robust and reproducible scientific research software. Integrating testing into your software 
-design and development process (vs adding tests at the end) promotes abstraction and modularization. I 
-expect your design plan to include testing plans for each component of your project and for the final code base 
-to be thoroughly tested. In Python, unit tests are an easy and fast testing strategy. 
+Testing is critical to robust and reproducible scientific research software. Integrating testing into your software design and development process (vs adding tests at the end) promotes abstraction and modularization. I expect your design plan to include testing plans for each component of your project and for the final code base to be thoroughly tested. In Python, unit tests are an easy and fast testing strategy. 
