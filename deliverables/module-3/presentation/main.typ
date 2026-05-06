@@ -52,18 +52,18 @@ open deliverables/module-3/presentation/main.pdf
 #title-slide[Background]
 
 
-#slide(outlined: false)[
-  #framed(title: "Problem")["Create a program that takes as input the set of all next-generation sequencing reads identified in a sample and an initial query sequence and returns the largest sequence contig that can be constructed from the reads that contains the initial query sequence."]
-]
 
-
-#slide(title: "Why does this matter?", outlined: false)[
+#slide(title: "Problem", outlined: false)[
   Imagine you want to confirm that a mutation is present in a mouse model of brittle bone disease. You have millions of short DNA fragments from a sequencer and one short sequence you know should be there. How do you find the full surrounding region?
 
   #v(1em)
   - Researchers validating transgenic knock-in models need to confirm the sequence around a mutation
   - There is no reference to compare against
-  - A targeted assembler anchored on a known query sequence can recover the region of interest directly
+  - All you have is the sequence you are hoping was knocked in
+]
+
+#slide(outlined: false)[
+  #framed(title: "Problem")["Create a program that takes as input the set of all next-generation sequencing reads identified in a sample and an initial query sequence and returns the largest sequence contig that can be constructed from the reads that contains the initial query sequence."]
 ]
 
 
@@ -90,13 +90,6 @@ open deliverables/module-3/presentation/main.pdf
 
 
 
-#slide(outlined: false)[
-  #grid(columns:(2fr,1fr,2fr), gutter: 10pt,
-    [#align(center)[#image("images/shredded-newspaper.jpg", height: 200pt, fit:"contain")]],
-    [#text(3em,theme_col)[#align(center)[$arrow.r.filled$]]],
-    [#align(center)[#image("images/reconstructed-newspaper.jpg", height: 200pt, fit:"contain")]],
-  )
-]
 
 
 #slide(outlined: false)[
@@ -116,6 +109,14 @@ open deliverables/module-3/presentation/main.pdf
 
     Output contig: #text(purple)[XXXXXXXXX]#text(red)[ZZZZZZZZZ]#text(blue)[YYYYY]VYYY
   ]]
+]
+
+#slide(outlined: false)[
+  #grid(columns:(2fr,1fr,2fr), gutter: 10pt,
+    [#align(center)[#image("images/shredded-newspaper.jpg", height: 200pt, fit:"contain")]],
+    [#text(5em,theme_col)[#align(center)[$arrow.r$]]],
+    [#align(center)[#image("images/reconstructed-newspaper.jpg", height: 200pt, fit:"contain")]],
+  )
 ]
 
 #let sl(overlay:none)= slide(title:"What are kmers?", outlined: false)[
