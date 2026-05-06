@@ -65,7 +65,7 @@ rsync -a --progress --ignore-times /Users/canderson/Documents/school/res-meth-cl
 
 #set heading(numbering:none)
 
-#let theme_col= rgb("5a0d87")
+#let theme_col= rgb("#8c2fc185")
 
 #show "XXX": text.with(fill:red)
 
@@ -146,7 +146,7 @@ The meat of this process executed using the ```python make_contigs()``` function
 There are currently 3 hyper-parameters used in my pipeline. The first and most important is `k`, which specifies the size of each kmer. Small values of `k` lead to fewer possible sequence combinations ($4^k$), so the same kmer appears across many unrelated reads, creating spurious edges in the graph. As `k` increases, combinations increase exponentially and unique kmers peak where nearly all possible sequences are observed. Beyond this peak, unique kmers decline gradually as longer kmers become increasingly rare across reads, with fewer surpassing the frequency threshold. This decline decelerates as `k` approaches read length, at which point kmers can no longer be fully contained within a single read. At this point the unique kmer count falls to zero and the graph fragments. The optimal `k` therefore balances uniqueness against frequency. I chose $k = 19$ to increase the number of possible connections that could lead to real contigs. See @kmercount below.
 
 
-#figure(image("../out/assigned/k_count.pdf", height:40%), caption:[Relationship between k and unique-kmer count]) <kmercount>
+#figure(image("../out/assigned/k_count.pdf", height:40%), caption:[Relationship between k and unique K-mer count]) <kmercount>
 
 The second parameter is `t` which excludes the kmers seen infrequently enough to likely be due to sequencing error. It is also important to strike a balance with t; if `t` is too high, only the predominant signal will be retained, if it is too low, much of the signal will be due to noise. 
 

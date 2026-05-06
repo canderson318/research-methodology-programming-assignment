@@ -10,6 +10,7 @@ This repo contains code that finds the longest contiguous sequence that contains
 
 *__Find the assignment description [here](assignment.md).__*
 *__Find the assignment report [here](deliverables/module-3/report/main.pdf).__*
+*__Find final presentation recording [here](deliverables/module-3/presentation/recording.mp4).__*
 
 ### Motivation
 There are many applications wherein a researcher would like to know the sequence context around a given query sequence they suspect exists in their sample. For example, gene targeting may be used to create a knock-out model and the researcher would like to verify that the target vector was incorporated into the right place in the genome. Alternatively, a researcher might wish to fully identify suspected contaminating sequences that would indicate the presence and/or source of unclean sample handling procedures in the laboratory, such as a specific PCR primer contamination.

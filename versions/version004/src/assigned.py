@@ -49,9 +49,9 @@ _ , query = parse(QUERY)
 _ , sequences = parse(READS)
 query = query[0]
 
+Ks = np.array(range(1,300,2))
 if False:
     res = []
-    Ks = np.array(range(1,300,2))
     for k in Ks:
         res.append(len(segment_all(sequences, k)[0]))
     pkl.dump(res,open(out_dir/"k_count.pkl", 'wb'))
